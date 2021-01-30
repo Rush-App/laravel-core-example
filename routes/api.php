@@ -16,7 +16,11 @@ Route::group(['middleware' => 'language'], function () {
     Route::post('register', 'User\\AuthController@register');
     Route::post('refresh-token', 'User\\AuthController@refreshToken');
 
-    Route::post('message', 'Message\\MessageController@createOne');
+    Route::get('posts', 'PostController@getAll');
+    Route::get('post/{id}', 'PostController@getOne');
+    Route::post('post', 'PostController@createOne');
+    Route::put('post/{id}', 'PostController@updateOne');
+    Route::delete('post/{id}', 'PostController@deleteOne');
 
     Route::group(['middleware' => 'jwt-auth:user'], function () {
         Route::get('user', 'User\\UserController@getOne');
@@ -24,6 +28,12 @@ Route::group(['middleware' => 'language'], function () {
 
         Route::post('logout', 'User\\AuthController@logout');
         Route::post('change-password', 'User\\AuthController@changePassword');
+
+        Route::get('posts', 'PostController@getAll');
+        Route::get('post/{id}', 'PostController@getOne');
+        Route::post('post', 'PostController@createOne');
+        Route::put('post/{id}', 'PostController@updateOne');
+        Route::delete('post/{id}', 'PostController@deleteOne');
     });
     //FOR USER
 
@@ -32,9 +42,21 @@ Route::group(['middleware' => 'language'], function () {
         Route::post('login', 'Admin\\User\\AuthController@login');
         Route::post('refresh-token', 'Admin\\User\\AuthController@refreshToken');
 
+        Route::get('posts', 'PostController@getAll');
+        Route::get('post/{id}', 'PostController@getOne');
+        Route::post('post', 'PostController@createOne');
+        Route::put('post/{id}', 'PostController@updateOneForAdmin');
+        Route::delete('post/{id}', 'PostController@deleteOneForAdmin');
+
         Route::group(['middleware' => 'jwt-auth:admin'], function () {
             Route::get('user', 'Admin\\User\\AdminController@getOne');
             Route::post('logout', 'Admin\\User\\AuthController@logout');
+
+            Route::get('posts', 'PostController@getAll');
+            Route::get('post/{id}', 'PostController@getOne');
+            Route::post('post', 'PostController@createOne');
+            Route::put('post/{id}', 'PostController@updateOneForAdmin');
+            Route::delete('post/{id}', 'PostController@deleteOneForAdmin');
         });
     });
     //FOR ADMIN
