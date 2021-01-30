@@ -1,6 +1,6 @@
 <?php
 
-namespace RushApp\AdminBoard\Providers;
+namespace RushApp\AdminBoard;
 
 use Illuminate\Support\ServiceProvider;
 

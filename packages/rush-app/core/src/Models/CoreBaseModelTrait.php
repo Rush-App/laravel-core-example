@@ -2,7 +2,6 @@
 
 namespace RushApp\Core\Models;
 
-use App\Models\Language;
 use App\Services\ForSendingMessages\MessageService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
