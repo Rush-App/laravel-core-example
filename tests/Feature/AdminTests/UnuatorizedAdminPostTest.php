@@ -21,12 +21,12 @@ class UnuatorizedAdminPostTest extends BaseAdminTest
     ];
 
     /**
-     * all posts tests by correct admin token
+     * all posts tests by anuatorized admin
      *
      * @test
      * @return void
      */
-    public function allPostsTestsByCorrectAdminToken()
+    public function allPostsTestsByUnuatorizedAdmin()
     {
         $this->setAdminToken();
         $this->setAdminId();
