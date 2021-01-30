@@ -2,8 +2,7 @@
 
 namespace RushApp\Core\Models;
 
-use App\Models\Language;
-use App\Services\LoggingService;
+use RushApp\Core\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;

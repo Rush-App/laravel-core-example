@@ -2,15 +2,12 @@
 
 namespace RushApp\Core\Models;
 
-use App\Services\ForSendingMessages\MessageService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Monolog\Logger;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Services\LoggingService;
+use RushApp\Core\Services\LoggingService;
 
 trait CoreBaseModelTrait
 {
@@ -228,9 +225,6 @@ trait CoreBaseModelTrait
         if (empty($language)) {
             $language = $this->getLanguage($this->baseLanguage);
 
-            $email = Auth::id() ? User::find(Auth::id())->email : 'Unregistered user';
-
-            MessageService::sendToTelegram('CoreBaseModelTrait/getCollectionsWithTranslate', 'Некорректный язык - '.$lang, $email);
             LoggingService::CRUD_errorsLogging('CoreBaseModelTrait/getCollectionsWithTranslate - this lang not correct - '.$lang, Logger::WARNING);
         }
 
@@ -491,9 +485,6 @@ trait CoreBaseModelTrait
 
             return $result ? $translationModel : false;
         } catch (\Exception $e) {
-            $email = Auth::id() ? User::find(Auth::id())->email : 'Unregistered user';
-
-            MessageService::sendToTelegram('CoreBaseModelTrait/modelFill', 'Ошибка при добавлении новой записи', $email);
             LoggingService::CRUD_errorsLogging('CoreBaseModelTrait/modelFill - '.$e, Logger::CRITICAL);
 
             return false;
