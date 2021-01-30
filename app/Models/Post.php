@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * Class Post
  *
  * @property int $id
- * @property boolean $published
+ * @property bool $published
  * @property int $user_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -29,7 +29,7 @@ class Post extends Model
     ];
 
     protected $casts = [
-        'published' => 'boolean',
+        'published' => 'bool',
     ];
 
     public function user()

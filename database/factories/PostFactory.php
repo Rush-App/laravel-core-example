@@ -23,7 +23,7 @@ class PostFactory extends Factory
     public function definition()
     {
         return [
-            'published' => $this->faker->boolean,
+            'published' => true,
             'user_id' => User::factory(),
         ];
     }
