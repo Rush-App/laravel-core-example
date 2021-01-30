@@ -37,8 +37,10 @@ class PostTest extends BaseUserTest
         $this->createPost();
         $this->updatePost();
         $this->updatePostInvalidId();
+        $this->updateForeignPost();
         $this->deletePost();
         $this->deletePostInvalidId();
+        $this->deleteForeignPost();
 
         $this->deleteUser();
     }
@@ -75,7 +77,6 @@ class PostTest extends BaseUserTest
     /**
      * get all posts
      *
-     * @test
      * @return void
      */
     public function getPosts()
@@ -94,7 +95,6 @@ class PostTest extends BaseUserTest
     /**
      * get one post
      *
-     * @test
      * @return void
      */
     public function getPost()
@@ -142,7 +142,6 @@ class PostTest extends BaseUserTest
     /**
      * update one post
      *
-     * @test
      * @return void
      */
     public function updatePost()
@@ -196,7 +195,6 @@ class PostTest extends BaseUserTest
     /**
      * delete one post
      *
-     * @test
      * @return void
      */
     public function deletePost()

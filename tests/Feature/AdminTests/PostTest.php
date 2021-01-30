@@ -73,7 +73,6 @@ class PostTest extends BaseAdminTest
     /**
      * get all posts
      *
-     * @test
      * @return void
      */
     public function getPosts()
@@ -92,7 +91,6 @@ class PostTest extends BaseAdminTest
     /**
      * get one post
      *
-     * @test
      * @return void
      */
     public function getPost()
@@ -140,7 +138,6 @@ class PostTest extends BaseAdminTest
     /**
      * update one post
      *
-     * @test
      * @return void
      */
     public function updatePost()
@@ -174,7 +171,6 @@ class PostTest extends BaseAdminTest
     /**
      * delete one post
      *
-     * @test
      * @return void
      */
     public function deletePost()
