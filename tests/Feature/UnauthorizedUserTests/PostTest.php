@@ -97,7 +97,7 @@ class PostTest extends TestCase
     {
         $response = $this->postJson('/post', $this->data);
 
-        $response->assertStatus(401)->assertJsonFragment($this->data);
+        $response->assertStatus(401);
 
         $post = Post::first();
         if (empty($post)) {
@@ -117,7 +117,7 @@ class PostTest extends TestCase
 
         $response = $this->putJson('/post/'.$postId, $this->data);
 
-        $response->assertStatus(401)->assertJsonFragment($this->data);
+        $response->assertStatus(401);
 
         $this->deletePostData($postId);
     }

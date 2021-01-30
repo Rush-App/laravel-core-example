@@ -4,7 +4,7 @@ namespace Tests\Feature\AdminTests;
 
 use Tests\Feature\BaseAdminTest;
 
-class PostTest extends BaseAdminTest
+class UnuatorizedAdminPostTest extends BaseAdminTest
 {
     /**
      * @var array
@@ -21,12 +21,12 @@ class PostTest extends BaseAdminTest
     ];
 
     /**
-     * all posts tests by correct admin token
+     * all posts tests by anuatorized admin
      *
      * @test
      * @return void
      */
-    public function allPostsTestsByCorrectAdminToken()
+    public function allPostsTestsByUnuatorizedAdmin()
     {
         $this->setAdminToken();
         $this->setAdminId();
@@ -127,7 +127,7 @@ class PostTest extends BaseAdminTest
     {
         $response = $this->postJson('admin/post', $this->data);
 
-        $response->assertStatus(200)->assertJsonFragment($this->data);
+        $response->assertStatus(401);
 
         $post = Post::first();
         if (empty($post)) {
@@ -149,7 +149,7 @@ class PostTest extends BaseAdminTest
 
         $response = $this->putJson('admin/post/'.$postId, $data);
 
-        $response->assertStatus(200)->assertJsonFragment($data);
+        $response->assertStatus(401);
 
         $this->deletePostData($postId);
     }
@@ -179,7 +179,7 @@ class PostTest extends BaseAdminTest
 
         $response = $this->deleteJson('admin/post/'.$postId);
 
-        $response->assertStatus(200);
+        $response->assertStatus(401);
 
         $this->deletePostData($postId);
 
