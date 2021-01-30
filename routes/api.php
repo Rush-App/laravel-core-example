@@ -1,4 +1,6 @@
 <?php
+use Illuminate\Support\Facades\Route;
+
 /**
  * Try to use methods from BaseController (App\Http\Controllers\BaseController)
  *
