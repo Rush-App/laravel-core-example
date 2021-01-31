@@ -2,10 +2,22 @@
 
 namespace Tests\Feature\Auth;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use RushApp\Core\Models\Language;
 use Tests\Feature\BaseUserTest;
 
 class UserAuthTest extends BaseUserTest
 {
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        DB::table('languages')->truncate();
+        Language::create(['name' => 'en']);
+    }
+
     /**
      * First register (unique email)
      * @test

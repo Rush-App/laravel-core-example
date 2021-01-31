@@ -8,9 +8,9 @@ abstract class BaseModel extends Model
 {
     use BaseModelTrait;
 
-    public function __construct()
+    public function __construct(array $attributes = [])
     {
         $this->initBaseModel();
-        parent::__construct();
+        parent::__construct($attributes);
     }
 }

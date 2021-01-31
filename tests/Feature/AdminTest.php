@@ -2,8 +2,20 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use RushApp\Core\Models\Language;
+
 class AdminTest extends BaseAdminTest
 {
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        DB::table('languages')->truncate();
+        Language::create(['name' => 'en']);
+    }
 
     /**
      * all admin tests by correct token (getAdminInfoAfterRegister, updateAdminInfo, logout)
@@ -31,7 +43,7 @@ class AdminTest extends BaseAdminTest
     {
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$this->adminToken,
-        ])->getJson('/user');
+        ])->getJson('admin/user');
 
         $response->assertStatus(200)->assertJsonStructure([
             'id',
@@ -52,12 +64,11 @@ class AdminTest extends BaseAdminTest
         $data = [
             'name' => 'Alex',
             'email' => $this->email,
-            'language_id' => 2,
         ];
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$this->adminToken,
-        ])->putJson('/user/'.$this->adminId, $data);
+        ])->putJson('admin/user/'.$this->adminId, $data);
 
         $response->assertStatus(200)->assertJsonFragment($data);
     }
@@ -77,7 +88,7 @@ class AdminTest extends BaseAdminTest
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$this->adminToken,
-        ])->postJson('/change-password', $data);
+        ])->postJson('admin/change-password', $data);
 
         $response->assertStatus(200)->assertJsonStructure([
             'token',
@@ -92,7 +103,7 @@ class AdminTest extends BaseAdminTest
     {
         $response = $this->withHeaders([
             'Authorization' => 'Bearer '.$this->adminToken,
-        ])->postJson('/logout');
+        ])->postJson('admin/logout');
 
         $response->assertStatus(200)->assertJsonStructure([
             'message',

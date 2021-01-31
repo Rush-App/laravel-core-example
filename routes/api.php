@@ -41,6 +41,7 @@ Route::group(['middleware' => 'language'], function () {
 
     //FOR ADMIN
     Route::prefix('admin')->group(function () {
+        Route::post('register', 'Admin\\User\\AuthController@register');
         Route::post('login', 'Admin\\User\\AuthController@login');
         Route::post('refresh-token', 'Admin\\User\\AuthController@refreshToken');
 
@@ -52,6 +53,7 @@ Route::group(['middleware' => 'language'], function () {
 
         Route::group(['middleware' => 'jwt-auth:admin'], function () {
             Route::get('user', 'Admin\\User\\AdminController@getOne');
+            Route::put('user/{id}', 'Admin\\User\\AdminController@updateOneForAdmin');
             Route::post('logout', 'Admin\\User\\AuthController@logout');
 
             Route::get('posts', 'PostController@getAll');

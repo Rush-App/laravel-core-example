@@ -2,8 +2,20 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use RushApp\Core\Models\Language;
+
 class UserTest extends BaseUserTest
 {
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        DB::table('languages')->truncate();
+        Language::create(['name' => 'en']);
+    }
 
     /**
      * all user tests by correct token (getUserInfoAfterRegister, updateUserInfo, changePassword, logout)
@@ -53,7 +65,6 @@ class UserTest extends BaseUserTest
         $data = [
             'name' => 'Alex',
             'email' => $this->email,
-            'language_id' => 2,
         ];
 
         $response = $this->withHeaders([

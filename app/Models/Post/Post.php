@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Post;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use RushApp\Core\Models\BaseModel;
+use RushApp\Core\Models\BaseModelTrait;
 
 /**
  * Class Post
@@ -19,17 +22,13 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @package App\Models
  */
-class Post extends Model
+class Post extends BaseModel
 {
     use HasFactory;
 
     protected $fillable = [
         'published',
         'user_id',
-    ];
-
-    protected $casts = [
-        'published' => 'bool',
     ];
 
     public function user()

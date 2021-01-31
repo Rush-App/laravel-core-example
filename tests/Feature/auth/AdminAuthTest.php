@@ -2,10 +2,23 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Admin;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use RushApp\Core\Models\Language;
 use Tests\Feature\BaseAdminTest;
 
 class AdminAuthTest extends BaseAdminTest
 {
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        DB::table('languages')->truncate();
+        Language::create(['name' => 'en']);
+    }
+
     /**
      * First register (unique email)
      * @test
@@ -51,7 +64,7 @@ class AdminAuthTest extends BaseAdminTest
             'email' => $this->email,
         ]);
 
-        $this->deleteUser();
+        $this->deleteAdmin();
     }
 
     /**

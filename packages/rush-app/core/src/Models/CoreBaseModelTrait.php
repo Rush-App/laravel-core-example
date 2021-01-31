@@ -2,6 +2,7 @@
 
 namespace RushApp\Core\Models;
 
+use App\Models\Post\Post;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
@@ -238,6 +239,9 @@ trait CoreBaseModelTrait
 
         if ($id) {
             $query->where($this->tablePluralName.'.id', $id);
+            if (!$this->modelClass::find($id)) {
+                return ['error' => true, 'code' => 404, 'message' => 'Not found'];
+            }
         }
 
         return $query;

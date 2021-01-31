@@ -2,6 +2,7 @@
 
 namespace RushApp\Core\Models;
 
+use App\Models\Post\Post;
 use RushApp\Core\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -47,9 +48,15 @@ trait BaseModelTrait
         //check for data output where translation tables exist
         if (class_exists($this->modelTranslationClass)) {
             $query = $this->getCollectionsWithTranslate($language, $id);
+            if (is_array($query) && $query['error'] === true) {
+                return $query;
+            }
         } else {
             if($id) {
                 $query = $this->modelClass::where($this->tablePluralName.'.id', $id);
+                if (!$this->modelClass::find($id)) {
+                    return ['error' => true, 'code' => 404, 'message' => 'Not found'];
+                }
             } else {
                 $query = new $this->modelClass;
             }

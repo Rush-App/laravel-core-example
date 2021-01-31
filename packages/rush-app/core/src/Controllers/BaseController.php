@@ -2,15 +2,17 @@
 
 namespace RushApp\Core\Controllers;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Routing\Controller;
+use RushApp\Core\Models\BaseModelTrait;
 
 abstract class BaseController extends Controller
 {
     protected string $modelClassController;
-    protected object $baseModel;
+    protected Model|BaseModelTrait $baseModel;
     protected string $requestClassController = '';
     protected array $expandParamsName = [];
     protected bool $onlyUserData = false;

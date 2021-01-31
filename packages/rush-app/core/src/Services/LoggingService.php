@@ -19,6 +19,10 @@ class LoggingService
             'name' => 'sendMessageLogging',
             'path' => 'logs/send-message.log'
         ],
+        'sendEmailLogging' => [
+            'name' => 'sendEmailLogging',
+            'path' => 'logs/send-email.log'
+        ],
         'forFilesLogging' => [
             'name' => 'forFilesLogging',
             'path' => 'logs/for-files.log'
@@ -26,6 +30,10 @@ class LoggingService
         'CRUD_errorsLogging' => [
             'name' => 'CRUD_errorsLogging',
             'path' => 'logs/crud-errors.log'
+        ],
+        'criticalServerErrorsLogging' => [
+            'name' => 'criticalServerErrorsLogging',
+            'path' => 'logs/critical-server-errors.log'
         ]
     ];
 
@@ -61,6 +69,20 @@ class LoggingService
      * @param string $message
      * @param $level
      */
+    public static function sendEmailLogging (string $message, int $level): void
+    {
+        self::addLoggerMessage(
+            self::$loggersList['sendEmailLogging']['name'],
+            self::$loggersList['sendEmailLogging']['path'],
+            $level,
+            $message
+        );
+    }
+
+    /**
+     * @param string $message
+     * @param $level
+     */
     public static function forFilesLogging (string $message, int $level): void
     {
         self::addLoggerMessage(
@@ -80,6 +102,20 @@ class LoggingService
         self::addLoggerMessage(
             self::$loggersList['CRUD_errorsLogging']['name'],
             self::$loggersList['CRUD_errorsLogging']['path'],
+            $level,
+            $message
+        );
+    }
+
+    /**
+     * @param string $message
+     * @param $level
+     */
+    public static function criticalServerErrorsLogging (string $message, int $level): void
+    {
+        self::addLoggerMessage(
+            self::$loggersList['criticalServerErrorsLogging']['name'],
+            self::$loggersList['criticalServerErrorsLogging']['path'],
             $level,
             $message
         );
@@ -123,4 +159,5 @@ class LoggingService
         }
     }
 }
+
 

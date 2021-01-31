@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\News;
+namespace App\Http\Controllers;
 
-use App\Models\Post;
+use App\Models\Post\Post;
+use Illuminate\Http\Request;
 use RushApp\Core\Controllers\BaseController;
 
 class PostController extends BaseController

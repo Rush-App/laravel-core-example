@@ -15,9 +15,9 @@ class CreatePostTranslationsTable extends Migration
     {
         Schema::create('post_translations', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->string('description');
-            $table->foreignId('post_id');
+            $table->string('title')->nullable();
+            $table->string('description')->nullable();
+            $table->foreignId('post_id')->constrained()->onDelete('cascade');
             $table->foreignId('language_id');
         });
     }

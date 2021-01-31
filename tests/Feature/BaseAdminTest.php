@@ -9,15 +9,15 @@ class BaseAdminTest extends TestCase
 {
     protected string $adminToken = '';
     protected ?int $adminId = null;
-    protected string $email = 'test333@test.test';
-    protected string $password = '88888888';
+    protected string $email = 'testAdmin333@test.test';
+    protected string $password = '7777777';
 
     /**
      * User registration
      */
     public function registration()
     {
-        return $this->postJson('/register', [
+        return $this->postJson('admin/register', [
             'email' => $this->email,
             'password' => $this->password,
             'password_confirmation' => $this->password,
@@ -31,7 +31,7 @@ class BaseAdminTest extends TestCase
      */
     public function login(string $email = null, string $password = null)
     {
-        return $this->postJson('/login', [
+        return $this->postJson('admin/login', [
             'email' => !empty($email) ? $email : $this->email,
             'password' => !empty($password) ? $password : $this->password,
         ]);
@@ -56,7 +56,7 @@ class BaseAdminTest extends TestCase
     public function setAdminId() {
         $responseData = $this->withHeaders([
             'Authorization' => 'Bearer '.$this->adminToken,
-        ])->getJson('/user')->json();
+        ])->getJson('admin/user')->json();
         if (array_key_exists('id', $responseData)) {
             $this->adminId = $responseData['id'];
         }

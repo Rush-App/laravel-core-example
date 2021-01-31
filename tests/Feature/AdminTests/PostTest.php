@@ -2,6 +2,10 @@
 
 namespace Tests\Feature\AdminTests;
 
+use App\Models\Post\Post;
+use App\Models\Post\PostTranslation;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use RushApp\Core\Models\Language;
 use Tests\Feature\BaseAdminTest;
 
 class PostTest extends BaseAdminTest
@@ -10,15 +14,33 @@ class PostTest extends BaseAdminTest
      * @var array
      */
     public array $data = [
+        'title' => "Test title",
+        'description' => "test desc",
         'language_id' => 1,
+        'published' => true,
+        'fill_language' => 'en',
     ];
 
     /**
      * @var array
      */
     public array $responseGetData = [
-        'language_id' => 1,
+        'title',
+        'description',
+        'language_id',
+        'published',
     ];
+
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Language::query()->truncate();
+        Post::query()->truncate();
+        PostTranslation::query()->truncate();
+        Language::create(['name' => 'en']);
+    }
 
     /**
      * all posts tests by correct admin token
@@ -48,14 +70,13 @@ class PostTest extends BaseAdminTest
      */
     public function createPostData(): int
     {
-        $post = new Post();
-        $post->fill($this->data);
+        $data = !empty($newData) ? $newData : $this->data;
 
-        $data = $this->data;
+        $post = Post::create($data);
+
         $data['post_id'] = $post->id;
 
-        $postTranslation = new PostTranslation();
-        $postTranslation->fill($data);
+        $postTranslation = PostTranslation::create($data);
 
         return $post->id;
     }
@@ -79,7 +100,9 @@ class PostTest extends BaseAdminTest
     {
         $postId = $this->createPostData();
 
-        $response = $this->getJson('admin/posts');
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->getJson('admin/posts');
 
         $response->assertStatus(200)->assertJsonStructure([
             '*' => $this->responseGetData
@@ -97,7 +120,9 @@ class PostTest extends BaseAdminTest
     {
         $postId = $this->createPostData();
 
-        $response = $this->getJson('admin/post/'.$postId);
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->getJson('admin/post/'.$postId);
 
         $response->assertStatus(200)->assertJsonStructure($this->responseGetData);
 
@@ -113,7 +138,9 @@ class PostTest extends BaseAdminTest
     {
         $postId = 999999999999;
 
-        $response = $this->getJson('/post/'.$postId);
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->getJson('/post/'.$postId);
 
         $response->assertStatus(404);
     }
@@ -125,7 +152,9 @@ class PostTest extends BaseAdminTest
      */
     public function createPost()
     {
-        $response = $this->postJson('admin/post', $this->data);
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->postJson('admin/post', $this->data);
 
         $response->assertStatus(200)->assertJsonFragment($this->data);
 
@@ -147,7 +176,9 @@ class PostTest extends BaseAdminTest
         $data = $this->data;
         $data['someElem'] = 'data';
 
-        $response = $this->putJson('admin/post/'.$postId, $data);
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->putJson('admin/post/'.$postId, $data);
 
         $response->assertStatus(200)->assertJsonFragment($data);
 
@@ -163,7 +194,9 @@ class PostTest extends BaseAdminTest
     {
         $postId = 999999999999;
 
-        $response = $this->putJson('/post/'.$postId);
+        $response = $this->withHeaders([
+                'Authorization' => 'Bearer '.$this->adminToken,
+            ])->putJson('/post/'.$postId);
 
         $response->assertStatus(404);
     }
@@ -177,11 +210,15 @@ class PostTest extends BaseAdminTest
     {
         $postId = $this->createPostData();
 
-        $response = $this->deleteJson('admin/post/'.$postId);
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->deleteJson('admin/post/'.$postId);
 
         $response->assertStatus(200);
 
-        $this->deletePostData($postId);
+        $this->withHeaders([
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->deletePostData($postId);
 
         $post = Post::first();
         if (!empty($post)) {
@@ -198,7 +235,9 @@ class PostTest extends BaseAdminTest
     {
         $postId = 999999999999;
 
-        $response = $this->deleteJson('/post/'.$postId);
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->deleteJson('/post/'.$postId);
 
         $response->assertStatus(404);
     }
