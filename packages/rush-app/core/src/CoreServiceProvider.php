@@ -23,6 +23,7 @@ class CoreServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->loadConfigs();
         $this->registerMigrations();
     }
 
@@ -31,5 +32,10 @@ class CoreServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         }
+    }
+
+    private function loadConfigs()
+    {
+        $this->mergeConfigFrom(__DIR__.'/../config/boilerplate.php', 'boilerplate');
     }
 }

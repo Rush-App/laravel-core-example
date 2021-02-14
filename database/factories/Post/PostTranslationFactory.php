@@ -1,9 +1,9 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\Post;
 
-use App\Models\Post;
-use App\Models\PostTranslation;
+use App\Models\Post\Post;
+use App\Models\Post\PostTranslation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use RushApp\Core\Models\Language;
@@ -24,11 +24,12 @@ class PostTranslationFactory extends Factory
      */
     public function definition()
     {
+        $languageId = Language::query()->first() ?: new Language(['name' => 'en']);
         return [
             'title' => $this->faker->title,
-            'description' => $this->faker->paragraph(),
+            'description' => $this->faker->title,
             'post_id' => Post::factory(),
-            'language_id' => Language::factory(),
+            'language_id' => $languageId,
         ];
     }
 }

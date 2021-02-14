@@ -1,8 +1,10 @@
 <?php
 
-namespace Tests\Feature\AdminTests;
+namespace Tests\OldFeature\AdminTests;
 
-use Tests\Feature\BaseAdminTest;
+use App\Models\Post\Post;
+use App\Models\Post\PostTranslation;
+use Tests\OldFeature\BaseAdminTest;
 
 class UnuatorizedAdminPostTest extends BaseAdminTest
 {
@@ -54,8 +56,8 @@ class UnuatorizedAdminPostTest extends BaseAdminTest
         $data = $this->data;
         $data['post_id'] = $post->id;
 
-        $postTranslation = new PostTranslation();
-        $postTranslation->fill($data);
+        $postTranslation = new PostTranslation($data);
+        $postTranslation->save();
 
         return $post->id;
     }
@@ -97,7 +99,7 @@ class UnuatorizedAdminPostTest extends BaseAdminTest
     {
         $postId = $this->createPostData();
 
-        $response = $this->getJson('admin/post/'.$postId);
+        $response = $this->getJson('admin/posts/'.$postId);
 
         $response->assertStatus(200)->assertJsonStructure($this->responseGetData);
 
@@ -113,7 +115,7 @@ class UnuatorizedAdminPostTest extends BaseAdminTest
     {
         $postId = 999999999999;
 
-        $response = $this->getJson('/post/'.$postId);
+        $response = $this->getJson('/posts/'.$postId);
 
         $response->assertStatus(404);
     }
@@ -125,7 +127,7 @@ class UnuatorizedAdminPostTest extends BaseAdminTest
      */
     public function createPost()
     {
-        $response = $this->postJson('admin/post', $this->data);
+        $response = $this->postJson('admin/posts', $this->data);
 
         $response->assertStatus(401);
 
@@ -147,7 +149,7 @@ class UnuatorizedAdminPostTest extends BaseAdminTest
         $data = $this->data;
         $data['someElem'] = 'data';
 
-        $response = $this->putJson('admin/post/'.$postId, $data);
+        $response = $this->putJson('admin/posts/'.$postId, $data);
 
         $response->assertStatus(401);
 
@@ -163,7 +165,7 @@ class UnuatorizedAdminPostTest extends BaseAdminTest
     {
         $postId = 999999999999;
 
-        $response = $this->putJson('/post/'.$postId);
+        $response = $this->putJson('/posts/'.$postId);
 
         $response->assertStatus(404);
     }
@@ -177,7 +179,7 @@ class UnuatorizedAdminPostTest extends BaseAdminTest
     {
         $postId = $this->createPostData();
 
-        $response = $this->deleteJson('admin/post/'.$postId);
+        $response = $this->deleteJson('admin/posts/'.$postId);
 
         $response->assertStatus(401);
 
@@ -198,7 +200,7 @@ class UnuatorizedAdminPostTest extends BaseAdminTest
     {
         $postId = 999999999999;
 
-        $response = $this->deleteJson('/post/'.$postId);
+        $response = $this->deleteJson('/posts/'.$postId);
 
         $response->assertStatus(404);
     }

@@ -1,23 +1,23 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\OldFeature;
 
-use App\Models\Admin;
+use App\Models\User;
 use Tests\TestCase;
 
-class BaseAdminTest extends TestCase
+class BaseUserTest extends TestCase
 {
-    protected string $adminToken = '';
-    protected ?int $adminId = null;
-    protected string $email = 'testAdmin333@test.test';
-    protected string $password = '7777777';
+    protected string $userToken = '';
+    protected ?int $userId = null;
+    protected string $email = 'test333@test.test';
+    protected string $password = '88888888';
 
     /**
      * User registration
      */
     public function registration()
     {
-        return $this->postJson('admin/register', [
+        return $this->postJson('/register', [
             'email' => $this->email,
             'password' => $this->password,
             'password_confirmation' => $this->password,
@@ -31,50 +31,50 @@ class BaseAdminTest extends TestCase
      */
     public function login(string $email = null, string $password = null)
     {
-        return $this->postJson('admin/login', [
+        return $this->postJson('/login', [
             'email' => !empty($email) ? $email : $this->email,
             'password' => !empty($password) ? $password : $this->password,
         ]);
     }
 
     /**
-     * set Admin token
+     * set User token
      * @return void
      */
-    public function setAdminToken() {
+    public function setUserToken() {
         $responseData = $this->registration()->json();
         if (array_key_exists('token', $responseData)) {
-            $this->adminToken = $responseData['token'];
+            $this->userToken = $responseData['token'];
         }
     }
 
     /**
-     * set Admin id
+     * set User id
      * PARAMS: null
      * @return void
      */
-    public function setAdminId() {
+    public function setUserId() {
         $responseData = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->adminToken,
-        ])->getJson('admin/user')->json();
+            'Authorization' => 'Bearer '.$this->userToken,
+        ])->getJson('/user')->json();
         if (array_key_exists('id', $responseData)) {
-            $this->adminId = $responseData['id'];
+            $this->userId = $responseData['id'];
         }
     }
 
     /**
-     * delete admin
+     * delete user
      * PARAMS: null
      * @test
      */
-    public function deleteAdmin()
+    public function deleteUser()
     {
-        $user = Admin::where('email', $this->email)->first();
+        $user = User::where('email', $this->email)->first();
         if ($user) {
             $user->delete();
         }
 
-        return $this->assertDatabaseMissing('admins', [
+        return $this->assertDatabaseMissing('users', [
             'email' => $this->email,
         ]);
     }

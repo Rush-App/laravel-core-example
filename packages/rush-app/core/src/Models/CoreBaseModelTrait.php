@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Monolog\Logger;
 use RushApp\Core\Services\LoggingService;
+use RushApp\Core\Services\UserActionsService;
 
 trait CoreBaseModelTrait
 {
@@ -163,6 +164,13 @@ trait CoreBaseModelTrait
     protected string $tableTranslationName;
 
     /**
+     * If model belongs to user (have user_id field), this model can be updated, deleted by this user (owner).
+     * @var bool
+     */
+    public bool $canBeManagedByOwner = true;
+
+
+        /**
      * set the initial parameters from the name of the model received from the controller
      * (the name of the model must be indicated in each controller)
      *
@@ -353,10 +361,19 @@ trait CoreBaseModelTrait
      * @param $valueForColumnName - column value to check whether a record matches a specific user
      * @return bool
      */
-    protected function isRecordBelongToUser(object $model, string $columnName, $valueForColumnName): bool {
-        return $this->isColumnExistInTable($columnName, $this->getTablePluralName())
-            ? $model->{$columnName} === $valueForColumnName
-            : false;
+    protected function canDoActionWithModel(object $model, string $columnName, $valueForColumnName): bool {
+        $userActionsService = resolve(UserActionsService::class);
+        if ($userActionsService->canUserPerformAction(request())) {
+            return true;
+        }
+
+        if ($this->canBeManagedByOwner) {
+            return $this->isColumnExistInTable($columnName, $this->getTablePluralName())
+                ? $model->{$columnName} === $valueForColumnName
+                : false;
+        }
+
+        return false;
     }
 
     /**
@@ -501,8 +518,9 @@ trait CoreBaseModelTrait
      * @param $request
      * @return int
      */
-    protected function getRequestId($request): int {
-        return intval($request->route('id'));
+    protected function getRequestId($request): int
+    {
+        return (int) ($request->route($this->getTableSingularName()) ?: $request->route('id'));
     }
 
     /**

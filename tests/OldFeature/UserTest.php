@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\OldFeature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use RushApp\Core\Models\Language;
 
-class AdminTest extends BaseAdminTest
+class UserTest extends BaseUserTest
 {
     use RefreshDatabase;
 
@@ -18,32 +18,33 @@ class AdminTest extends BaseAdminTest
     }
 
     /**
-     * all admin tests by correct token (getAdminInfoAfterRegister, updateAdminInfo, logout)
+     * all user tests by correct token (getUserInfoAfterRegister, updateUserInfo, changePassword, logout)
      * @test
      * @return void
      */
-    public function allAdminTestsByCorrectToken()
+    public function allUserTestsByCorrectToken()
     {
-        $this->setAdminToken();
-        $this->setAdminId();
+        $this->setUserToken();
+        $this->setUserId();
 
-        $this->getAdminInfoAfterRegister();
-        $this->updateAdminInfo();
+        $this->getUserInfoAfterRegister();
+        $this->updateUserInfo();
+        $this->changePassword();
         $this->logout();
 
-        $this->deleteAdmin();
+        $this->deleteUser();
     }
 
     /**
-     * Get admin info
+     * Get user info
      * PARAMS: null
      * @return void
      */
-    public function getAdminInfoAfterRegister()
+    public function getUserInfoAfterRegister()
     {
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->adminToken,
-        ])->getJson('admin/user');
+            'Authorization' => 'Bearer '.$this->userToken,
+        ])->getJson('/user');
 
         $response->assertStatus(200)->assertJsonStructure([
             'id',
@@ -55,11 +56,11 @@ class AdminTest extends BaseAdminTest
     }
 
     /**
-     * update admin info when admin updated all data
+     * update user info when user updated all data
      * PARAMS: $data
      * @return void
      */
-    public function updateAdminInfo()
+    public function updateUserInfo()
     {
         $data = [
             'name' => 'Alex',
@@ -67,8 +68,8 @@ class AdminTest extends BaseAdminTest
         ];
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->adminToken,
-        ])->putJson('admin/user/'.$this->adminId, $data);
+            'Authorization' => 'Bearer '.$this->userToken,
+        ])->putJson('/user/'.$this->userId, $data);
 
         $response->assertStatus(200)->assertJsonFragment($data);
     }
@@ -87,8 +88,8 @@ class AdminTest extends BaseAdminTest
         ];
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->adminToken,
-        ])->postJson('admin/change-password', $data);
+            'Authorization' => 'Bearer '.$this->userToken,
+        ])->postJson('/change-password', $data);
 
         $response->assertStatus(200)->assertJsonStructure([
             'token',
@@ -102,8 +103,8 @@ class AdminTest extends BaseAdminTest
     public function logout()
     {
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->adminToken,
-        ])->postJson('admin/logout');
+            'Authorization' => 'Bearer '.$this->userToken,
+        ])->postJson('/logout');
 
         $response->assertStatus(200)->assertJsonStructure([
             'message',

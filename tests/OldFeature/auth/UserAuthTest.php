@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Feature\Auth;
+namespace Tests\OldFeature\Auth;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use RushApp\Core\Models\Language;
-use Tests\Feature\BaseUserTest;
+use Tests\OldFeature\BaseUserTest;
 
 class UserAuthTest extends BaseUserTest
 {

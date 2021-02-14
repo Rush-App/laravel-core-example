@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Feature\Auth;
+namespace Tests\OldFeature\Auth;
 
 use App\Models\Admin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use RushApp\Core\Models\Language;
-use Tests\Feature\BaseAdminTest;
+use Tests\OldFeature\BaseAdminTest;
 
 class AdminAuthTest extends BaseAdminTest
 {

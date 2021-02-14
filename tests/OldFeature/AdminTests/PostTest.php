@@ -1,27 +1,15 @@
 <?php
 
-namespace Tests\Feature\AuthorizedUserTests;
+namespace Tests\OldFeature\AdminTests;
 
 use App\Models\Post\Post;
 use App\Models\Post\PostTranslation;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RushApp\Core\Models\Language;
-use Tests\Feature\BaseUserTest;
+use Tests\OldFeature\BaseAdminTest;
 
-class PostTest extends BaseUserTest
+class PostTest extends BaseAdminTest
 {
-    use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        Language::query()->truncate();
-        Post::query()->truncate();
-        PostTranslation::query()->truncate();
-        Language::create(['name' => 'en']);
-    }
-
     /**
      * @var array
      */
@@ -43,19 +31,27 @@ class PostTest extends BaseUserTest
         'published',
     ];
 
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Language::query()->truncate();
+        Post::query()->truncate();
+        PostTranslation::query()->truncate();
+        Language::create(['name' => 'en']);
+    }
+
     /**
-     * all posts tests by correct user token
+     * all posts tests by correct admin token
      *
      * @test
      * @return void
      */
-    public function allPostsTestsByCorrectUserToken()
+    public function allPostsTestsByCorrectAdminToken()
     {
-        User::query()->truncate();
-
-        $this->setUserToken();
-        $this->setUserId();
-        $this->data['user_id'] = $this->userId;
+        $this->setAdminToken();
+        $this->setAdminId();
 
         $this->getPosts();
         $this->getPost();
@@ -63,19 +59,16 @@ class PostTest extends BaseUserTest
         $this->createPost();
         $this->updatePost();
         $this->updatePostInvalidId();
-        $this->updateForeignPost();
         $this->deletePost();
         $this->deletePostInvalidId();
-        $this->deleteForeignPost();
 
-        $this->deleteUser();
+        $this->deleteAdmin();
     }
 
     /**
-     * @param array $newData
      * @return int
      */
-    public function createPostData(array $newData = []): int
+    public function createPostData(): int
     {
         $data = !empty($newData) ? $newData : $this->data;
 
@@ -92,7 +85,7 @@ class PostTest extends BaseUserTest
     {
         Post::find($postId)->delete();
 
-        $posts = Post::where('id', $postId)->get();
+        $posts = Post::where('post_id', $postId)->get();
         foreach ($posts as $post) {
             $post->delete();
         }
@@ -108,8 +101,8 @@ class PostTest extends BaseUserTest
         $postId = $this->createPostData();
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->userToken,
-        ])->getJson('posts');
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->getJson('admin/posts');
 
         $response->assertStatus(200)->assertJsonStructure([
             '*' => $this->responseGetData
@@ -128,8 +121,8 @@ class PostTest extends BaseUserTest
         $postId = $this->createPostData();
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->userToken,
-        ])->getJson('/post/'.$postId);
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->getJson('admin/posts/'.$postId);
 
         $response->assertStatus(200)->assertJsonStructure($this->responseGetData);
 
@@ -146,8 +139,8 @@ class PostTest extends BaseUserTest
         $postId = 999999999999;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->userToken,
-        ])->getJson('/post/'.$postId);
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->getJson('/posts/'.$postId);
 
         $response->assertStatus(404);
     }
@@ -160,13 +153,10 @@ class PostTest extends BaseUserTest
     public function createPost()
     {
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->userToken,
-        ])->postJson('post', $this->data);
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->postJson('admin/posts', $this->data);
 
-        $res = $this->data;
-        unset($res['fill_language']);
-
-        $response->assertStatus(200)->assertJsonFragment($res);
+        $response->assertStatus(200)->assertJsonFragment($this->data);
 
         $post = Post::first();
         if (empty($post)) {
@@ -187,13 +177,10 @@ class PostTest extends BaseUserTest
         $data['someElem'] = 'data';
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->userToken,
-        ])->putJson('post/'.$postId, $data);
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->putJson('admin/posts/'.$postId, $data);
 
-        $res = $this->data;
-        unset($res['fill_language']);
-
-        $response->assertStatus(200)->assertJsonFragment($res);
+        $response->assertStatus(200)->assertJsonFragment($data);
 
         $this->deletePostData($postId);
     }
@@ -208,28 +195,10 @@ class PostTest extends BaseUserTest
         $postId = 999999999999;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->userToken,
-        ])->putJson('/post/'.$postId);
+                'Authorization' => 'Bearer '.$this->adminToken,
+            ])->putJson('/posts/'.$postId);
 
         $response->assertStatus(404);
-    }
-
-    /**
-     * update invalid one post
-     *
-     * @return void
-     */
-    public function updateForeignPost()
-    {
-        /** @var Post $post */
-        $post = Post::factory()->create();
-
-        $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->userToken,
-        ])->putJson('/post/'.$post->id);
-        $response->assertStatus(403);
-
-        $this->deletePostData($post->id);
     }
 
     /**
@@ -239,19 +208,20 @@ class PostTest extends BaseUserTest
      */
     public function deletePost()
     {
-        PostTranslation::query()->truncate();
         $postId = $this->createPostData();
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->userToken,
-        ])->deleteJson('post/'.$postId);
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->deleteJson('admin/posts/'.$postId);
 
         $response->assertStatus(200);
 
-        $post = Post::find($postId);
-        $postTranslation = PostTranslation::wherePostId($postId)->first();
+        $this->withHeaders([
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->deletePostData($postId);
 
-        if ($post || $postTranslation) {
+        $post = Post::first();
+        if (!empty($post)) {
             $this->fail('FAIL - post hasnt been deleted');
         }
     }
@@ -266,28 +236,9 @@ class PostTest extends BaseUserTest
         $postId = 999999999999;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->userToken,
-        ])->deleteJson('/post/'.$postId);
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->deleteJson('/posts/'.$postId);
 
         $response->assertStatus(404);
-    }
-
-    /**
-     * delete invalid one post
-     *
-     * @return void
-     */
-    public function deleteForeignPost()
-    {
-        /** @var Post $post */
-        $post = Post::factory()->create();
-
-        $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$this->userToken,
-        ])->deleteJson('/post/'.$post->id);
-
-        $response->assertStatus(403);
-
-        $this->deletePostData($post->id);
     }
 }

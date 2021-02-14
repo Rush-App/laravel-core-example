@@ -27,7 +27,7 @@ abstract class BaseController extends Controller
         }
     }
 
-    public function getAll(Request $request)
+    public function index(Request $request)
     {
         $result = $this->baseModel->getCollections($request, $this->expandParamsName, $this->onlyUserData, true);
 
@@ -36,7 +36,7 @@ abstract class BaseController extends Controller
             : $this->successResponse($result['data']);
     }
 
-    public function getOne(Request $request)
+    public function show(Request $request)
     {
         $result = $this->baseModel->getCollections($request, $this->expandParamsName, $this->onlyUserData, false);
 
@@ -45,7 +45,7 @@ abstract class BaseController extends Controller
             : $this->successResponse($result['data']);
     }
 
-    public function createOne(Request $request)
+    public function store(Request $request)
     {
         if ($this->isValidateError($request)) {
             return $this->isValidateError($request);
@@ -58,7 +58,7 @@ abstract class BaseController extends Controller
             : $this->successResponse($result['data']);
     }
 
-    public function updateOne(Request $request)
+    public function update(Request $request)
     {
         if ($this->isValidateError($request)) {
             return $this->isValidateError($request);
@@ -71,7 +71,7 @@ abstract class BaseController extends Controller
             : $this->successResponse($result['data']);
     }
 
-    public function deleteOne(Request $request)
+    public function destroy(Request $request)
     {
         $result =  $this->baseModel->deleteOne($request, Auth::id());
 
@@ -126,5 +126,10 @@ abstract class BaseController extends Controller
     protected function responseWithError(string $error, int $code)
     {
         return response()->json(['error' => $error], $code);
+    }
+
+    public function getBaseModel(): Model
+    {
+        return $this->baseModel;
     }
 }

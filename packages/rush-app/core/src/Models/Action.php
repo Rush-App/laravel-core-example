@@ -6,19 +6,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Class Language
+ * Class Action
  *
  * @property int $id
- * @property string $name
+ * @property string $action_name
+ * @property string $entity_name
  *
  * @package App\Models
  */
-class Language extends Model
+class Action extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'action_name',
+        'entity_name',
     ];
 
     public $timestamps = false;

@@ -233,7 +233,7 @@ trait BaseModelTrait
     public function updateOne(Request $request, $valueForColumnName, string $columnName = 'user_id'): array
     {
         if ($model = $this->getOneRecord($this->getRequestId($request))) {
-            if ($this->isRecordBelongToUser($model, $columnName, $valueForColumnName)){
+            if ($this->canDoActionWithModel($model, $columnName, $valueForColumnName)){
                 if ($this->isRecordWithTranslationTable() && $this->getLanguage($request[$this->requestParamNameForGetFillLangData])) {
                     if ($data = $this->updateOneRecordWithTranslationTable($model, $request)) {
                         return ['error' => false, 'code' => 200, 'data' => $data];
@@ -270,7 +270,7 @@ trait BaseModelTrait
     public function deleteOne(Request $request, $valueForColumnName, string $columnName = 'user_id'): array
     {
         if ($model = $this->getOneRecord($this->getRequestId($request))) {
-            if ($this->isRecordBelongToUser($model, $columnName, $valueForColumnName)){
+            if ($this->canDoActionWithModel($model, $columnName, $valueForColumnName)){
                 if ($model->delete()){
                     return ['error' => false, 'code' => 200, 'data' => __('response_messages.deleted')];
                 } else {
@@ -286,58 +286,58 @@ trait BaseModelTrait
             return ['error' => true, 'code' => 404, 'message' => __('response_messages.data_not_found')];
         }
     }
-
-
-    /**
-     * Updates the model and then returns it (WITHOUT checking for compliance of the record to the user)
-     * Use for Admins
-     *
-     * @param Request $request
-     * @return array
-     */
-    public function updateOneForAdmin(Request $request): array
-    {
-        if ($model = $this->getOneRecord($this->getRequestId($request))) {
-            if (($this->isRecordWithTranslationTable() && $this->getLanguage($request[$this->requestParamNameForGetFillLangData]))) {
-                if ($data = $this->updateOneRecordWithTranslationTable($model, $request)) {
-                    return ['error' => false, 'code' => 200, 'data' => $data];
-                } else {
-                    LoggingService::CRUD_errorsLogging('updateOneForAdmin (1) - 409', Logger::CRITICAL);
-                    return ['error' => true, 'code' => 409, 'message' => __('response_messages.edit_error')];
-                }
-            } else {
-                if ($data = $this->updateOneRecord($request->all(), $model)) {
-                    return ['error' => false, 'code' => 200, 'data' => $data];
-                } else {
-                    LoggingService::CRUD_errorsLogging('updateOneForAdmin (2) - 409', Logger::CRITICAL);
-                    return ['error' => true, 'code' => 409, 'message' => __('response_messages.edit_error')];
-                }
-            }
-        } else {
-            LoggingService::CRUD_errorsLogging('deleteOneForAdmin - 404', Logger::NOTICE);
-            return ['error' => true, 'code' => 404, 'message' => __('response_messages.data_not_found')];
-        }
-    }
-
-    /**
-     * Delete one record WITHOUT checking for compliance of the record to the user
-     * Use for Admins
-     *
-     * @param Request $request
-     * @return array
-     */
-    public function deleteOneForAdmin(Request $request): array
-    {
-        if ($model = $this->getOneRecord($this->getRequestId($request))) {
-            if ($model->delete()){
-                return ['error' => false, 'code' => 200, 'data' => 'Data has been successfully deleted'];
-            } else {
-                LoggingService::CRUD_errorsLogging('deleteOneForAdmin - 409', Logger::CRITICAL);
-                return ['error' => true, 'code' => 409, 'message' => __('response_messages.delete_error')];
-            }
-        } else {
-            LoggingService::CRUD_errorsLogging('deleteOneForAdmin - 404', Logger::NOTICE);
-            return ['error' => true, 'code' => 404, 'message' => __('response_messages.data_not_found')];
-        }
-    }
+//
+//
+//    /**
+//     * Updates the model and then returns it (WITHOUT checking for compliance of the record to the user)
+//     * Use for Admins
+//     *
+//     * @param Request $request
+//     * @return array
+//     */
+//    public function updateOneForAdmin(Request $request): array
+//    {
+//        if ($model = $this->getOneRecord($this->getRequestId($request))) {
+//            if (($this->isRecordWithTranslationTable() && $this->getLanguage($request[$this->requestParamNameForGetFillLangData]))) {
+//                if ($data = $this->updateOneRecordWithTranslationTable($model, $request)) {
+//                    return ['error' => false, 'code' => 200, 'data' => $data];
+//                } else {
+//                    LoggingService::CRUD_errorsLogging('updateOneForAdmin (1) - 409', Logger::CRITICAL);
+//                    return ['error' => true, 'code' => 409, 'message' => __('response_messages.edit_error')];
+//                }
+//            } else {
+//                if ($data = $this->updateOneRecord($request->all(), $model)) {
+//                    return ['error' => false, 'code' => 200, 'data' => $data];
+//                } else {
+//                    LoggingService::CRUD_errorsLogging('updateOneForAdmin (2) - 409', Logger::CRITICAL);
+//                    return ['error' => true, 'code' => 409, 'message' => __('response_messages.edit_error')];
+//                }
+//            }
+//        } else {
+//            LoggingService::CRUD_errorsLogging('deleteOneForAdmin - 404', Logger::NOTICE);
+//            return ['error' => true, 'code' => 404, 'message' => __('response_messages.data_not_found')];
+//        }
+//    }
+//
+//    /**
+//     * Delete one record WITHOUT checking for compliance of the record to the user
+//     * Use for Admins
+//     *
+//     * @param Request $request
+//     * @return array
+//     */
+//    public function deleteOneForAdmin(Request $request): array
+//    {
+//        if ($model = $this->getOneRecord($this->getRequestId($request))) {
+//            if ($model->delete()){
+//                return ['error' => false, 'code' => 200, 'data' => 'Data has been successfully deleted'];
+//            } else {
+//                LoggingService::CRUD_errorsLogging('deleteOneForAdmin - 409', Logger::CRITICAL);
+//                return ['error' => true, 'code' => 409, 'message' => __('response_messages.delete_error')];
+//            }
+//        } else {
+//            LoggingService::CRUD_errorsLogging('deleteOneForAdmin - 404', Logger::NOTICE);
+//            return ['error' => true, 'code' => 404, 'message' => __('response_messages.data_not_found')];
+//        }
+//    }
 }
