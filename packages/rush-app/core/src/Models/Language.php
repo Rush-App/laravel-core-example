@@ -4,6 +4,7 @@ namespace RushApp\Core\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use RushApp\Core\Database\Factories\LanguageFactory;
 
 /**
  * Class Language
@@ -22,4 +23,9 @@ class Language extends Model
     ];
 
     public $timestamps = false;
+
+    protected static function newFactory()
+    {
+        return LanguageFactory::new();
+    }
 }

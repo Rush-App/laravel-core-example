@@ -6,7 +6,6 @@ use App\Models\Post\Post;
 use App\Models\Post\PostTranslation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
-use RushApp\Core\Models\Language;
 use Tests\Feature\BaseTest;
 
 class PostAdminTest extends BaseTest
@@ -22,7 +21,7 @@ class PostAdminTest extends BaseTest
     {
         $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity);
 
-        $postTranslations = PostTranslation::factory()->count(5)->create(['language_id' => Language::first()->id]);
+        $posts = Post::factory()->count(5)->create();
 
         $response = $this->getJson($this->entity);
         $response
@@ -50,9 +49,9 @@ class PostAdminTest extends BaseTest
     {
         $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity);
 
-        $postTranslation = PostTranslation::factory()->create(['language_id' => Language::first()->id]);
+        $post = Post::factory()->create();
 
-        $response = $this->getJson($this->entity.'/'.$postTranslation->post_id);
+        $response = $this->getJson($this->entity.'/'.$post->id);
 
         $response
             ->assertStatus(200)
@@ -115,9 +114,9 @@ class PostAdminTest extends BaseTest
         return  [
             'title' => "Test title",
             'description' => "test desc",
-            'language_id' => Language::query()->first()->id,
+            'language_id' => $this->currentLanguage->id,
             'published' => true,
-            'fill_language' => 'en',
+            'fill_language' => $this->currentLanguage->name,
         ];
     }
 
@@ -128,12 +127,11 @@ class PostAdminTest extends BaseTest
     {
         $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity);
 
-        $postTranslation = PostTranslation::factory()->create(['language_id' => Language::first()->id]);
-        $postTranslation->post->update(['user_id' => Auth::id()]);
+        $post = Post::factory()->create(['user_id' => Auth::id()]);
 
         $this->assertDatabaseCount($this->entity, 1);
 
-        $response = $this->deleteJson($this->entity.'/'.$postTranslation->post_id);
+        $response = $this->deleteJson($this->entity.'/'.$post->id);
 
         $response->assertOk();
         $this->assertDatabaseCount($this->entity, 0);
@@ -146,12 +144,11 @@ class PostAdminTest extends BaseTest
     {
         $this->signIn();
 
-        $postTranslation = PostTranslation::factory()->create(['language_id' => Language::first()->id]);
-        $postTranslation->post->update(['user_id' => Auth::id()]);
+        $post = Post::factory()->create(['user_id' => Auth::id()]);
 
         $this->assertDatabaseCount($this->entity, 1);
 
-        $response = $this->deleteJson($this->entity.'/'.$postTranslation->post_id);
+        $response = $this->deleteJson($this->entity.'/'.$post->id);
 
         $response->assertOk();
         $this->assertDatabaseCount($this->entity, 0);

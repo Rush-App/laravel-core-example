@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use RushApp\Core\Database\Factories\RoleFactory;
 
 /**
  * Class Role
@@ -31,5 +32,10 @@ class Role extends Model
     public function actions(): BelongsToMany
     {
         return $this->belongsToMany(Action::class, 'role_action');
+    }
+
+    protected static function newFactory()
+    {
+        return RoleFactory::new();
     }
 }

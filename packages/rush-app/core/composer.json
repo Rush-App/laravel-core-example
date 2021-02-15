@@ -13,7 +13,8 @@
     },
     "autoload": {
         "psr-4": {
-            "RushApp\\Core\\": "src/"
+            "RushApp\\Core\\": "src/",
+            "RushApp\\Core\\Database\\Factories\\": "database/factories"
         }
     }
 }

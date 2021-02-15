@@ -4,6 +4,7 @@ namespace RushApp\Core\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use RushApp\Core\Database\Factories\ActionFactory;
 
 /**
  * Class Action
@@ -24,4 +25,9 @@ class Action extends Model
     ];
 
     public $timestamps = false;
+
+    protected static function newFactory()
+    {
+        return ActionFactory::new();
+    }
 }

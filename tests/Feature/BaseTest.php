@@ -13,11 +13,16 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class BaseTest extends TestCase
 {
+    /**
+     * @var Language
+     */
+    protected $currentLanguage;
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        Language::create(['name' => 'en']);
+        $this->currentLanguage = Language::factory()->create();
     }
 
     protected function signIn(Authenticatable $user = null, string $guard = null)
@@ -54,13 +59,7 @@ class BaseTest extends TestCase
 
     private function getBaseActions(): array
     {
-        return [
-            'index',
-            'show',
-            'store',
-            'update',
-            'destroy'
-        ];
+        return config('boilerplate.action_names', []);
     }
 
     protected function getTranslateTable($entity): string

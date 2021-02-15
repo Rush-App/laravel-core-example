@@ -3,6 +3,7 @@
 namespace RushApp\Core\Models;
 
 use App\Models\Post\Post;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
@@ -199,6 +200,15 @@ trait CoreBaseModelTrait
     protected function setTablePluralName(): void
     {
         $this->tablePluralName = $this->modelClass::getTable();
+    }
+
+    public function translation(): HasMany
+    {
+        return $this->hasMany(
+            $this->modelTranslationClass,
+            $this->getNameForeignKeyForTranslationTable(),
+            $this->getKeyName()
+        );
     }
 
     protected function setTablePluralNameNonStatic(): void
