@@ -26,6 +26,7 @@ Route::group(['middleware' => 'language'], function () {
         Route::post('change-password', 'User\\AuthController@changePassword');
 
         Route::resource('posts', 'PostController')->middleware('check-user-action');
+        Route::resource('categories', 'CategoryController')->middleware('check-user-action');
     });
     //FOR USER
 

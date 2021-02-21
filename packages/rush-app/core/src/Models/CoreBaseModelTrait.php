@@ -202,7 +202,7 @@ trait CoreBaseModelTrait
         $this->tablePluralName = $this->modelClass::getTable();
     }
 
-    public function translation(): HasMany
+    public function translations(): HasMany
     {
         return $this->hasMany(
             $this->modelTranslationClass,

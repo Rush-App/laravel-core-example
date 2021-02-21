@@ -31,7 +31,7 @@ class Role extends Model
 
     public function actions(): BelongsToMany
     {
-        return $this->belongsToMany(Action::class, 'role_action');
+        return $this->belongsToMany(Action::class, 'role_action')->withPivot('property_id');
     }
 
     protected static function newFactory()

@@ -11,13 +11,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use RushApp\Core\Models\BaseModelTrait;
+use RushApp\Core\Models\OldBaseModelTrait;
 use RushApp\Core\Models\Role;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use HasFactory, Notifiable, BaseModelTrait, JWTSubjectTrait;
+    use HasFactory, Notifiable, OldBaseModelTrait, JWTSubjectTrait;
 
     /**
      * The attributes that are mass assignable.

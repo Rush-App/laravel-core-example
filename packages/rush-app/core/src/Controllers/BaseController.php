@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Str;
 use RushApp\Core\Models\BaseModelTrait;
 
 abstract class BaseController extends Controller
@@ -18,9 +19,12 @@ abstract class BaseController extends Controller
     protected bool $onlyUserData = false;
     protected array $validationRules = [];
 
-    public function __construct()
+    public function __construct(Request $request)
     {
-        $this->baseModel = new $this->modelClassController;
+        $parameterName = Str::singular(resolve($this->modelClassController)->getTable());
+        $entityId = $request->route($parameterName);
+
+        $this->baseModel = $entityId ? $this->modelClassController::find($entityId) : new $this->modelClassController;
         if ($this->requestClassController) {
             $requestClass = new $this->requestClassController;
             $this->validationRules = $requestClass->rules();

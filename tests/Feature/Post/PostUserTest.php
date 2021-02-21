@@ -4,12 +4,11 @@ namespace Tests\Feature\Post;
 
 use App\Models\Post\Post;
 use App\Models\Post\PostTranslation;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Tests\BaseFeatureTest;
 
-class PostAdminTest extends BaseFeatureTest
+class PostUserTest extends BaseFeatureTest
 {
     use RefreshDatabase;
 
@@ -20,9 +19,10 @@ class PostAdminTest extends BaseFeatureTest
      */
     public function indexTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'index');
 
-        $posts = Post::factory()->count(5)->create();
+        $authenticatedUserPosts = Post::factory()->count(5)->create(['user_id' => Auth::id()]);
+        $otherUserPosts = Post::factory()->count(2)->create();
 
         $response = $this->getJson($this->entity);
         $response
@@ -48,9 +48,9 @@ class PostAdminTest extends BaseFeatureTest
      */
     public function showTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'show', true);
 
-        $post = Post::factory()->create();
+        $post = Post::factory()->create(['user_id' => Auth::id()]);
 
         $response = $this->getJson($this->entity.'/'.$post->id);
 
@@ -74,7 +74,7 @@ class PostAdminTest extends BaseFeatureTest
      */
     public function storeTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'store');
 
         $postData = $this->getDefaultPostData();
 
@@ -90,11 +90,11 @@ class PostAdminTest extends BaseFeatureTest
      */
     public function updateTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'update', true);
 
         $postData = $this->getDefaultPostData();
 
-        $postData['user_id'] = User::factory()->create()->id;
+        $postData['user_id'] = Auth::id();
         $post = Post::create($postData);
         $postData['post_id'] = $post->id;
         $postTranslation = PostTranslation::create($postData);
@@ -125,23 +125,6 @@ class PostAdminTest extends BaseFeatureTest
      * @test
      */
     public function destroyPost()
-    {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
-
-        $post = Post::factory()->create(['user_id' => Auth::id()]);
-
-        $this->assertDatabaseCount($this->entity, 1);
-
-        $response = $this->deleteJson($this->entity.'/'.$post->id);
-
-        $response->assertOk();
-        $this->assertDatabaseCount($this->entity, 0);
-    }
-
-    /**
-     * @test
-     */
-    public function destroyPostByOwner()
     {
         $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'destroy', true);
 

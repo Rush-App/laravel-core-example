@@ -12,8 +12,6 @@ use RushApp\Core\Database\Factories\ActionFactory;
  * @property int $id
  * @property string $action_name
  * @property string $entity_name
- *
- * @package App\Models
  */
 class Action extends Model
 {

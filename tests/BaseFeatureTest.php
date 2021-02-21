@@ -1,17 +1,18 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests;
 
 use App\Models\User;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use RushApp\Core\Models\Action;
 use RushApp\Core\Models\Language;
+use RushApp\Core\Models\Property;
 use RushApp\Core\Models\Role;
-use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
-class BaseTest extends TestCase
+class BaseFeatureTest extends TestCase
 {
     /**
      * @var Language
@@ -36,7 +37,7 @@ class BaseTest extends TestCase
         return $this;
     }
 
-    protected function assignAllActionsForAuthenticatedUser(string $entity)
+    protected function assignAllActionsForAdminUser(string $entity)
     {
         /** @var Role $role */
         $role = Role::create([
@@ -47,12 +48,37 @@ class BaseTest extends TestCase
         $user = Auth::user();
         $user->roles()->save($role);
 
+        $property = Property::create(['is_owner' => false]);
         foreach ($this->getBaseActions() as $actionName) {
-            $role->actions()->create([
+            $action = Action::create([
                 'entity_name' => $entity,
                 'action_name' => $actionName,
             ]);
+
+            $role->actions()->attach($action->id, ['property_id' => $property->id]);
         }
+
+        return $this;
+    }
+
+    protected function assignAllActionsForAuthenticatedUser(string $entity, string $actionName, $isOwner = true)
+    {
+        /** @var Role $role */
+        $role = Role::create([
+            'name' => 'User',
+        ]);
+
+        /** @var User $user */
+        $user = Auth::user();
+        $user->roles()->save($role);
+
+        $property = Property::create(['is_owner' => $isOwner]);
+        $action = Action::create([
+            'entity_name' => $entity,
+            'action_name' => $actionName,
+        ]);
+
+        $role->actions()->attach($action->id, ['property_id' => $property->id]);
 
         return $this;
     }

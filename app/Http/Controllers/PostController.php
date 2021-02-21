@@ -13,4 +13,6 @@ class PostController extends BaseController
      * @var string
      */
     protected string $modelClassController = Post::class;
+
+    protected bool $onlyUserData = true;
 }

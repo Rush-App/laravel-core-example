@@ -2,13 +2,10 @@
 
 namespace App\Models\Post;
 
+use App\Models\BaseModel;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use RushApp\Core\Models\Action;
-use RushApp\Core\Models\BaseModel;
-use RushApp\Core\Models\BaseModelTrait;
 
 /**
  * Class Post
@@ -31,8 +28,6 @@ class Post extends BaseModel
         'published',
         'user_id',
     ];
-
-    public bool $canBeManagedByOwner = true;
 
     public function user()
     {

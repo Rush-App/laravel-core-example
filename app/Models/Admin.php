@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Traits\JWTSubjectTrait;
-use RushApp\Core\Models\BaseModelTrait;
+use RushApp\Core\Models\OldBaseModelTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -14,7 +14,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class Admin extends Authenticatable implements JWTSubject
 {
-    use HasFactory, Notifiable, BaseModelTrait, JWTSubjectTrait;
+    use HasFactory, Notifiable, OldBaseModelTrait, JWTSubjectTrait;
 
     /**
      * The attributes that are mass assignable.
