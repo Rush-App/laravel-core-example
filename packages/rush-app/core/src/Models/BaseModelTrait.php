@@ -2,11 +2,8 @@
 
 namespace RushApp\Core\Models;
 
-use App\Models\Post\Post;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Monolog\Logger;
@@ -21,22 +18,20 @@ trait BaseModelTrait
     /**
      * Return a collections of one or more records with or without translation
      *
-     * @param Request $request
+     * @param array $requestParameters
      * @param array $withRelationNames
      * @return Builder
      */
-    public function getQueryBuilder(Request $request, array $withRelationNames): Builder
+    public function getQueryBuilder(array $requestParameters, array $withRelationNames): Builder
     {
-        $params = $request->all();
-
         //checking for the issuance of data that belongs to the current user
         if ($this->isOwner()) {
-            $params['user_id'] = Auth::id();
+            $requestParameters['user_id'] = Auth::id();
         }
 
         /** @var Builder $query */
         $query = class_exists($this->modelTranslationClass)
-            ? $this->getTranslationQuery($params['language_id'])
+            ? $this->getTranslationQuery($requestParameters['language_id'])
             : (new $this->modelClass)->query();
 
         //adding data from translation main table
@@ -47,27 +42,26 @@ trait BaseModelTrait
         //adding data from main table
         $query->addSelect($this->tablePluralName.'.*');
 
-        $this->addWithData($query, $params, $withRelationNames);
-        $this->addQueryOptions($query, $params);
+        $this->addWithData($query, $requestParameters, $withRelationNames);
+        $this->addQueryOptions($query, $requestParameters);
 
         //Parameters for "where", under what conditions the request will be displayed
-        $whereParams = $this->getQueryParams($this->filteringForParams($params));
+        $whereParams = $this->getQueryParams($this->filteringForParams($requestParameters));
 
         return $query->where($whereParams);
     }
 
-    public function getQueryBuilderOne(Request $request, array $withRelationNames): Builder
+    public function getQueryBuilderOne(array $requestParameters, int $entityId, array $withRelationNames): Builder
     {
-        $entityId = $request->route($this->getTableSingularName());
-        $query = $this->getQueryBuilder($request, $withRelationNames);
+        $query = $this->getQueryBuilder($requestParameters, $withRelationNames);
 
         return $query->where($this->getTable().'.id', $entityId);
     }
 
-    protected function addWithData(Builder $query, array $params, array $withRelationNames)
+    protected function addWithData(Builder $query, array $requestParameters, array $withRelationNames)
     {
-        if (!empty($params[ModelRequestParameters::WITH])) {
-            $requestedWithParameters = $this->parseParameterWithAdditionalValues($params[ModelRequestParameters::WITH]);
+        if (!empty($requestParameters[ModelRequestParameters::WITH])) {
+            $requestedWithParameters = $this->parseParameterWithAdditionalValues($requestParameters[ModelRequestParameters::WITH]);
 
             $withRelations = [];
             foreach ($requestedWithParameters as $withParameter) {
@@ -89,16 +83,16 @@ trait BaseModelTrait
         }
     }
 
-    protected function addQueryOptions(Builder $query, array $params)
+    protected function addQueryOptions(Builder $query, array $requestParameters)
     {
         //Select only this data
-        if(!empty($select = $this->getValueForExistingTableColumns($params, ModelRequestParameters::SELECTED_FIELDS))) {
+        if(!empty($select = $this->getValueForExistingTableColumns($requestParameters, ModelRequestParameters::SELECTED_FIELDS))) {
             $query->select($select);
         }
 
         //Sort by a given field
-        if(!empty($params[ModelRequestParameters::ORDER_BY_FIELD])) {
-            $parsedOrderParameters = $this->parseParameterWithAdditionalValues($params[ModelRequestParameters::ORDER_BY_FIELD]);
+        if(!empty($requestParameters[ModelRequestParameters::ORDER_BY_FIELD])) {
+            $parsedOrderParameters = $this->parseParameterWithAdditionalValues($requestParameters[ModelRequestParameters::ORDER_BY_FIELD]);
             if ($parsedOrderParameters->isNotEmpty()) {
                 $query->orderBy($parsedOrderParameters->get('name'), $parsedOrderParameters->get('values', 'asc'));
             }
@@ -106,15 +100,15 @@ trait BaseModelTrait
 
         //give data where some field is whereNotNull
         if (
-            !empty($params[ModelRequestParameters::WHERE_NOT_NULL]) &&
-            !empty($whereNotNull = $this->getValueForExistingTableColumns($params, ModelRequestParameters::WHERE_NOT_NULL))
+            !empty($requestParameters[ModelRequestParameters::WHERE_NOT_NULL]) &&
+            !empty($whereNotNull = $this->getValueForExistingTableColumns($requestParameters, ModelRequestParameters::WHERE_NOT_NULL))
         ) {
             $query->whereNotNull($whereNotNull);
         }
 
         //Get limited data
-        if(!empty($params[ModelRequestParameters::LIMIT])) {
-            $query->limit($params[ModelRequestParameters::LIMIT]);
+        if(!empty($requestParameters[ModelRequestParameters::LIMIT])) {
+            $query->limit($requestParameters[ModelRequestParameters::LIMIT]);
         }
     }
 
@@ -122,20 +116,20 @@ trait BaseModelTrait
      * Creating a new record in the database
      * Return the created record
      *
-     * @param Request $request
+     * @param array $requestParameters
      * @return array
      */
-    public function createOne(Request $request): array
+    public function createOne(array $requestParameters): array
     {
-        $request->merge(["user_id" => Auth::id()]);
+        $requestParameters['user_id'] = Auth::id();
 
         try {
             /** @var Model|static $mainModel */
-            $mainModel = $this->modelClass::create($request->all());
+            $mainModel = $this->modelClass::create($requestParameters);
 
             $modelAttributes = $mainModel->getAttributes();
             if ($this->isTranslatable()) {
-                $translationModel = $mainModel->translations()->create($request->all());
+                $translationModel = $mainModel->translations()->create($requestParameters);
                 $modelAttributes = array_merge($translationModel->getAttributes(), $modelAttributes);
             }
 
@@ -149,14 +143,15 @@ trait BaseModelTrait
     /**
      * Updates the model and then returns it (with checking for compliance of the record to the user)
      *
-     * @param Request $request
+     * @param array $requestParameters
+     * @param int $entityId
      * @param string $columnName - column name to check whether a record matches a specific user
      * @param $valueForColumnName - column value to check whether a record matches a specific user
      * @return array
      */
-    public function updateOne(Request $request, $valueForColumnName, string $columnName = 'user_id'): array
+    public function updateOne(array $requestParameters, int $entityId, $valueForColumnName, string $columnName = 'user_id'): array
     {
-        $model = $this->getOneRecord($this->getRequestId($request));
+        $model = $this->getOneRecord($entityId);
         if (!$model) {
             throw new CoreHttpException(404, __('core::error_messages.not_found'));
         }
@@ -165,7 +160,7 @@ trait BaseModelTrait
             throw new CoreHttpException(403, __('core::error_messages.permission_denied'));
         }
 
-        return $this->updateOneRecord($model, $request->all());
+        return $this->updateOneRecord($model, $requestParameters);
     }
 
 
@@ -174,13 +169,13 @@ trait BaseModelTrait
      *
      * @param string $columnName - column name to check whether a record matches a specific user
      * @param $valueForColumnName - column value to check whether a record matches a specific user
-     * @param Request $request
+     * @param int $entityId
      * @return void
      */
-    public function deleteOne(Request $request, $valueForColumnName, string $columnName = 'user_id'): void
+    public function deleteOne(int $entityId, $valueForColumnName, string $columnName = 'user_id'): void
     {
         /** @var Model $model */
-        $model = $this->getOneRecord($this->getRequestId($request));
+        $model = $this->getOneRecord($entityId);
         if (!$model) {
             throw new CoreHttpException(404, __('core::error_messages.not_found'));
         }

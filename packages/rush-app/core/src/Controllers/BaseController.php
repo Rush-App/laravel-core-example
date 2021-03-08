@@ -32,7 +32,7 @@ abstract class BaseController extends Controller
         //check for paginate data
         $paginate = $request->get(ModelRequestParameters::PAGINATE, false);
 
-        $query = $this->baseModel->getQueryBuilder($request, $this->withRelationNames);
+        $query = $this->baseModel->getQueryBuilder($request->all(), $this->withRelationNames);
 
         return $paginate
             ? $this->successResponse($query->paginate($paginate))
@@ -41,7 +41,8 @@ abstract class BaseController extends Controller
 
     public function show(Request $request)
     {
-        $query = $this->baseModel->getQueryBuilderOne($request, $this->withRelationNames);
+        $entityId = $request->route($this->baseModel->getTableSingularName());
+        $query = $this->baseModel->getQueryBuilderOne($request->all(), $entityId, $this->withRelationNames);
 
         return $this->successResponse($query->first());
     }
@@ -50,7 +51,7 @@ abstract class BaseController extends Controller
     {
         $this->validateRequest($request, $this->storeRequestClass);
 
-        $modelAttributes = $this->baseModel->createOne($request);
+        $modelAttributes = $this->baseModel->createOne($request->all());
 
         return $this->successResponse($modelAttributes);
     }
@@ -60,14 +61,16 @@ abstract class BaseController extends Controller
         $validationRequestClass = $this->updateRequestClass ?: $this->storeRequestClass;
         $this->validateRequest($request, $validationRequestClass);
 
-        $modelAttributes = $this->baseModel->updateOne($request, Auth::id());
+        $entityId = $request->route($this->baseModel->getTableSingularName());
+        $modelAttributes = $this->baseModel->updateOne($request->all(), $entityId, Auth::id());
 
         return $this->successResponse($modelAttributes);
     }
 
     public function destroy(Request $request)
     {
-        $this->baseModel->deleteOne($request, Auth::id());
+        $entityId = $request->route($this->baseModel->getTableSingularName());
+        $this->baseModel->deleteOne($entityId, Auth::id());
 
         return $this->successResponse([
             'message' => __('response_messages.deleted')

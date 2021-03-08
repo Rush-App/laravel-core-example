@@ -73,7 +73,7 @@ trait CoreBaseModelTrait
         $this->tableTranslationName = $this->getTableSingularName().'_translations';
     }
 
-    protected function getTableSingularName(): string
+    public function getTableSingularName(): string
     {
         return $this->tableSingularName;
     }
