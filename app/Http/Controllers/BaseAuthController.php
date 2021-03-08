@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Monolog\Logger;
 use RushApp\Core\Controllers\BaseController;
+use RushApp\Core\Exceptions\CoreHttpException;
 use RushApp\Core\Models\CoreBaseModelTrait;
 use RushApp\Core\Services\LoggingService;
 
@@ -25,29 +25,16 @@ abstract class BaseAuthController extends BaseController
 
     public function registerAttempt(Request $request)
     {
-        if ($data = $this->modelFill($request->all(), User::class)) {
+        try {
+            $user = User::create($request->all());
             return $this->loginAttempt($request->only(['email', 'password']));
-        } else {
+        } catch (\Exception $e) {
             LoggingService::authLogging(
-                Config::get('system_messages.could_not_register.message'),
+                Config::get('system_messages.could_not_register.message') . $e->getMessage(),
                 Logger::CRITICAL
             );
 
-            return $this->responseWithError(__('response_messages.error_500'), 500);
-        }
-    }
-
-    public function registerAdminAttempt(Request $request)
-    {
-        if ($data = $this->modelFill($request->all(), Admin::class)) {
-            return $this->loginAttempt($request->only(['email', 'password']));
-        } else {
-            LoggingService::authLogging(
-                Config::get('system_messages.could_not_register.message'),
-                Logger::CRITICAL
-            );
-
-            return $this->responseWithError(__('response_messages.error_500'), 500);
+            throw new CoreHttpException(409, __('response_messages.registration_error'));
         }
     }
 

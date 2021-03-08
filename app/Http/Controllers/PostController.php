@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post\Post;
-use Illuminate\Http\Request;
 use RushApp\Core\Controllers\BaseController;
 
 class PostController extends BaseController
@@ -14,5 +15,11 @@ class PostController extends BaseController
      */
     protected string $modelClassController = Post::class;
 
-    protected bool $onlyUserData = true;
+    protected ?string $storeRequestClass = StorePostRequest::class;
+    protected ?string $updateRequestClass = UpdatePostRequest::class;
+
+    protected array $withRelationNames = [
+        'user',
+        'categories',
+    ];
 }

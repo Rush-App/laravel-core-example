@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Post\Post;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Class Category
@@ -19,4 +21,9 @@ class Category extends BaseModel
     protected $fillable = [
         'name',
     ];
+
+    public function posts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'post_category');
+    }
 }

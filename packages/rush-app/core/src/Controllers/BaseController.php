@@ -8,16 +8,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
+use RushApp\Core\Enums\ModelRequestParameters;
 use RushApp\Core\Models\BaseModelTrait;
 
 abstract class BaseController extends Controller
 {
     protected string $modelClassController;
     protected Model|BaseModelTrait $baseModel;
-    protected string $requestClassController = '';
-    protected array $expandParamsName = [];
-    protected bool $onlyUserData = false;
-    protected array $validationRules = [];
+    protected ?string $storeRequestClass = null;
+    protected ?string $updateRequestClass = null;
+    protected array $withRelationNames = [];
 
     public function __construct(Request $request)
     {
@@ -25,101 +25,64 @@ abstract class BaseController extends Controller
         $entityId = $request->route($parameterName);
 
         $this->baseModel = $entityId ? $this->modelClassController::find($entityId) : new $this->modelClassController;
-        if ($this->requestClassController) {
-            $requestClass = new $this->requestClassController;
-            $this->validationRules = $requestClass->rules();
-        }
     }
 
     public function index(Request $request)
     {
-        $result = $this->baseModel->getCollections($request, $this->expandParamsName, $this->onlyUserData, true);
+        //check for paginate data
+        $paginate = $request->get(ModelRequestParameters::PAGINATE, false);
 
-        return $result['error'] === true
-            ? $this->responseWithError($result['message'], $result['code'])
-            : $this->successResponse($result['data']);
+        $query = $this->baseModel->getQueryBuilder($request, $this->withRelationNames);
+
+        return $paginate
+            ? $this->successResponse($query->paginate($paginate))
+            : $this->successResponse($query->get());
     }
 
     public function show(Request $request)
     {
-        $result = $this->baseModel->getCollections($request, $this->expandParamsName, $this->onlyUserData, false);
+        $query = $this->baseModel->getQueryBuilderOne($request, $this->withRelationNames);
 
-        return $result['error'] === true
-            ? $this->responseWithError($result['message'], $result['code'])
-            : $this->successResponse($result['data']);
+        return $this->successResponse($query->first());
     }
 
     public function store(Request $request)
     {
-        if ($this->isValidateError($request)) {
-            return $this->isValidateError($request);
-        }
+        $this->validateRequest($request, $this->storeRequestClass);
 
-        $result = $this->baseModel->createOne($request);
+        $modelAttributes = $this->baseModel->createOne($request);
 
-        return $result['error'] === true
-            ? $this->responseWithError($result['message'], $result['code'])
-            : $this->successResponse($result['data']);
+        return $this->successResponse($modelAttributes);
     }
 
     public function update(Request $request)
     {
-        if ($this->isValidateError($request)) {
-            return $this->isValidateError($request);
-        }
+        $validationRequestClass = $this->updateRequestClass ?: $this->storeRequestClass;
+        $this->validateRequest($request, $validationRequestClass);
 
-        $result = $this->baseModel->updateOne($request, Auth::id());
+        $modelAttributes = $this->baseModel->updateOne($request, Auth::id());
 
-        return $result['error'] === true
-            ? $this->responseWithError($result['message'], $result['code'])
-            : $this->successResponse($result['data']);
+        return $this->successResponse($modelAttributes);
     }
 
     public function destroy(Request $request)
     {
-        $result =  $this->baseModel->deleteOne($request, Auth::id());
+        $this->baseModel->deleteOne($request, Auth::id());
 
-        return $result['error'] === true
-            ? $this->responseWithError($result['message'], $result['code'])
-            : $this->successResponse($result['data']);
+        return $this->successResponse([
+            'message' => __('response_messages.deleted')
+        ]);
     }
 
-    public function updateOneForAdmin(Request $request)
+    public function validateRequest(Request $request, ?string $requestClass)
     {
-        if ($this->isValidateError($request)) {
-            return $this->isValidateError($request);
+        if ($requestClass) {
+            $validator = Validator::make(
+                $request->all(),
+                resolve($requestClass)->rules()
+            );
+            $validator->validate();
         }
-
-        $result = $this->baseModel->updateOneForAdmin($request);
-
-        return $result['error'] === true
-            ? $this->responseWithError($result['message'], $result['code'])
-            : $this->successResponse($result['data']);
-    }
-
-    public function deleteOneForAdmin(Request $request)
-    {
-        $result = $this->baseModel->deleteOneForAdmin($request);
-
-        return $result['error'] === true
-            ? $this->responseWithError($result['message'], $result['code'])
-            : $this->successResponse($result['data']);
-    }
-
-    public function isValidateError (Request $request) {
-        $validator = Validator::make($request->all(), $this->validationRules);
-
-        return $validator->fails()
-            ? response()->json($validator->errors(), 422)
-            : false;
-    }
-
-    public function isDataValidateError (array $data) {
-        $validator = Validator::make($data, $this->validationRules);
-
-        return $validator->fails()
-            ? response()->json($validator->errors(), 422)
-            : false;
     }
 
     protected function successResponse($responseData)

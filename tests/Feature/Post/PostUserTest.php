@@ -79,7 +79,7 @@ class PostUserTest extends BaseFeatureTest
         $postData = $this->getDefaultPostData();
 
         $response = $this->postJson($this->entity, $postData);
-        unset($postData['fill_language']);
+        unset($postData['language']);
         $response->assertOk()->assertJsonFragment($postData);
         $this->assertDatabaseCount($this->entity, 1);
         $this->assertDatabaseCount($this->getTranslateTable($this->entity), 1);
@@ -103,7 +103,7 @@ class PostUserTest extends BaseFeatureTest
         $postData['published'] = false;
 
         $response = $this->putJson($this->entity.'/'.$post->id, $postData);
-        unset($postData['fill_language']);
+        unset($postData['language']);
         $response->assertOk()->assertJsonFragment($postData);
 
         $this->assertDatabaseHas($this->getTranslateTable($this->entity), ['title' => $postData['title']]);
@@ -117,7 +117,7 @@ class PostUserTest extends BaseFeatureTest
             'description' => "test desc",
             'language_id' => $this->currentLanguage->id,
             'published' => true,
-            'fill_language' => $this->currentLanguage->name,
+            'language' => $this->currentLanguage->name,
         ];
     }
 

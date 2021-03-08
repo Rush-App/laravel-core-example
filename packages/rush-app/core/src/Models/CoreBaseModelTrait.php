@@ -3,23 +3,22 @@
 namespace RushApp\Core\Models;
 
 use App\Models\Post\Post;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Monolog\Logger;
+use RushApp\Core\Enums\ModelRequestParameters;
+use RushApp\Core\Exceptions\CoreHttpException;
 use RushApp\Core\Services\LoggingService;
 use RushApp\Core\Services\UserActionsService;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 trait CoreBaseModelTrait
 {
-    /**
-     * the base lang on site. Available in Languages model
-     * @var string
-     */
-    protected string $baseLanguage = 'en';
-
     /**
      * controller model name
      * @var string
@@ -32,119 +31,6 @@ trait CoreBaseModelTrait
      * @var string
      */
     protected string $modelTranslationClass;
-
-    /**
-     * You should always use "language_id" in all Translations tables.
-     * Example: $table->foreign('language_id')->references('id')->on('languages');
-     *
-     * @var string
-     */
-    protected string $languageNameForeignKey = "language_id";
-
-    /**
-     * Select column for sorting data
-     *
-     * You should always use "order_by_field" in all requests.
-     * One record or whole string without spaces separated by commas
-     * Example: http://127.0.0.1:8000/test?order_by=year
-     *
-     * @var string
-     */
-    protected string $requestParamNameForOrderByField = "order_by_field";
-
-    /**
-     * For sorting data - "asc" or "desc"
-     *
-     * You should always use "order_by" in all requests.
-     * Order direction must be "asc" or "desc"
-     * Example: http://127.0.0.1:8000/test?order_by=desc
-     *
-     * @var string
-     */
-    protected string $requestParamNameForOrderBy = "order_by";
-
-    /**
-     * For right join
-     * You should always use "rightJoin" in all requests.
-     * Data in rightJoin must be like table names (users, internship_categories)
-     *
-     * One record or whole string without spaces separated by commas
-     * Example: http://127.0.0.1:8000/test?rightJoin=user,userCategory
-     *
-     * @var string
-     */
-    protected string $requestParamNameForRightJoin = "rightJoin";
-
-    /**
-     * For left join
-     * You should always use "leftJoin" in all requests.
-     * Data in rightJoin must be like table names (users, internship_categories)
-     *
-     * One record or whole string without spaces separated by commas
-     * Example: http://127.0.0.1:8000/test?rightJoin=user,userCategory
-     * @var string
-     */
-    protected string $requestParamNameForLeftJoin = "leftJoin";
-
-    /**
-     * For server paginate
-     * You should always use "paginate" in all requests.
-     * You also can use paramName "page" for show current user`s page
-     *
-     * Example: http://127.0.0.1:8000/test?paginate=2&page=1
-     * @var string
-     */
-    protected string $requestParamNamePaginateNumber = "paginate";
-
-    /**
-     * For server to get limited data
-     * You should always use "limit" in all requests.
-     *
-     * Example: http://127.0.0.1:8000/test?limit=2
-     * @var string
-     */
-    protected string $requestParamNameForLimit = "limit";
-
-    /**
-     * For left or right join (when $modelClass is a junction table (many-to-many))
-     *
-     * @var string
-     */
-    protected string $requestParamNameJunctionTable = "junction_table";
-
-    /**
-     * For partial selection of fields from tables
-     *
-     * You should always use "selected_fields" in all requests.
-     * Whole string without spaces separated by commas
-     * Example: http://127.0.0.1:8000/test?selected_fields=year,id,name
-     *
-     * @var string
-     */
-    protected string $requestParamNameForSelect = "selected_fields";
-
-    /**
-     * To remove those records where the selected fields are empty
-     *
-     * You should always use "where_not_null" in all requests.
-     * Whole string without spaces separated by commas
-     * Example: http://127.0.0.1:8000/test?where_not_null=year,id,name
-     *
-     * @var string
-     */
-    protected string $requestParamNameForWhereNotNull = "where_not_null";
-
-    /**
-     * For get the data that the user fills in the selected language
-     * To interrupt the issue by language from the headers (language)
-     *
-     * You should always use "fill_language" in all requests to interrupt basic behavior.
-     * Supports the names of languages as in the database
-     * Example: http://127.0.0.1:8000/test?fill_language=en
-     *
-     * @var string
-     */
-    protected string $requestParamNameForGetFillLangData = "fill_language";
 
     /**
      * table singular name in the database (example: model - Country, $tableSingularName - country)
@@ -181,25 +67,15 @@ trait CoreBaseModelTrait
     {
         $this->modelClass = $modelClass ? $modelClass : static::class;
         $this->modelTranslationClass = $this->modelClass.'Translation';
-        $this->setTableSingularName();
-        $this->setTranslationTableName();
-        $modelClass ? $this->setTablePluralNameNonStatic() : $this->setTablePluralName();
-    }
 
-    protected function setTableSingularName(): void
-    {
-        $camelCaseTableName = lcfirst(substr(strrchr($this->modelClass, "\\"), 1));
-        $this->tableSingularName = ltrim(strtolower(preg_replace('/[A-Z]([A-Z](?![a-z]))*/', '_$0', $camelCaseTableName)), '_');
+        $this->tablePluralName = $this->modelClass::getTable();
+        $this->tableSingularName = Str::singular($this->tablePluralName);
+        $this->tableTranslationName = $this->getTableSingularName().'_translations';
     }
 
     protected function getTableSingularName(): string
     {
         return $this->tableSingularName;
-    }
-
-    protected function setTablePluralName(): void
-    {
-        $this->tablePluralName = $this->modelClass::getTable();
     }
 
     public function translations(): HasMany
@@ -211,19 +87,9 @@ trait CoreBaseModelTrait
         );
     }
 
-    protected function setTablePluralNameNonStatic(): void
-    {
-        $this->tablePluralName = (new $this->modelClass)->getTable();
-    }
-
     protected function getTablePluralName(): string
     {
         return $this->tablePluralName;
-    }
-
-    protected function setTranslationTableName(): void
-    {
-        $this->tableTranslationName = $this->getTableSingularName().'_translations';
     }
 
     protected function getTranslationTableName(): string
@@ -234,35 +100,19 @@ trait CoreBaseModelTrait
 
     /**
      * returns a collection of model records with translations
-     * @param int|null $id - to display the specific record
-     * @param string $lang - Like 'en' or 'ru'
+     * @param int $languageId
      *
-     * @return mixed
+     * @return Builder
      */
-    protected function getCollectionsWithTranslate(string $lang, int $id = null) {
-        $language = $this->getLanguage($lang);
-        if (empty($language)) {
-            $language = $this->getLanguage($this->baseLanguage);
-
-            LoggingService::CRUD_errorsLogging('CoreBaseModelTrait/getCollectionsWithTranslate - this lang not correct - '.$lang, Logger::WARNING);
-        }
-
+    protected function getTranslationQuery(int $languageId): Builder
+    {
         $translationsTableName = $this->getTranslationTableName();
 
-        $query = $this->modelClass::leftJoin(
+        return $this->modelClass::leftJoin(
             $translationsTableName,
             $this->tablePluralName.'.id',
             $translationsTableName.'.'.$this->getNameForeignKeyForTranslationTable()
-        )->where($translationsTableName.'.'.$this->languageNameForeignKey, $language->id);
-
-        if ($id) {
-            $query->where($this->tablePluralName.'.id', $id);
-            if (!$this->modelClass::find($id)) {
-                return ['error' => true, 'code' => 404, 'message' => 'Not found'];
-            }
-        }
-
-        return $query;
+        )->where($translationsTableName.'.'.ModelRequestParameters::LANGUAGE_FOREIGN_KEY, $languageId);
     }
 
     /**
@@ -288,65 +138,29 @@ trait CoreBaseModelTrait
     }
 
     /**
-     * Get record from translate table
-     *
-     * @param int $id - ID record from main table
-     * @param string $foreignKeyName
-     * @param int $languageId
-     * @return mixed
-     */
-    protected function getOneRecordForTranslateTable(string $foreignKeyName, int $id, int $languageId)
-    {
-        return $this->modelTranslationClass::where([$foreignKeyName => $id, $this->languageNameForeignKey => $languageId])->first();
-    }
-
-    /**
      * Updates the model and then returns it
      *
-     * @param array $modelData - data for updating
-     * @param object $model - specific record from the database
-     * @return mixed|boolean
+     * @param Model $model - specific record from the database
+     * @param array $dataToUpdate - data for updating
+     * @return array
      */
-    protected function updateOneRecord(array $modelData, object $model)
+    protected function updateOneRecord(Model $model, array $dataToUpdate)
     {
-        $filteredModelData = array_filter(
-            $modelData,
-            fn($key) => in_array($key, $model->getFillable()),
-            ARRAY_FILTER_USE_KEY
-        );
+        /** @var Model|static $mainModel */
+        $mainModel = tap($model)->update($dataToUpdate);
+        $modelAttributes = $mainModel->getAttributes();
 
-        $model->fill($filteredModelData);
+        if ($this->isTranslatable()) {
+            /** @var Model $translationModel */
+            $translationModel = $mainModel->translations()->firstOrNew([
+                'language_id' => $dataToUpdate['language_id']
+            ]);
+            $translationModel->update($dataToUpdate);
 
-        return $model->save() ? $model->refresh() : false;
-    }
-
-    /**
-     * @param $model
-     * @param $request
-     * @return Collection|boolean
-     */
-    protected function updateOneRecordWithTranslationTable($model, $request)
-    {
-        $language = $this->getLanguage($request[$this->requestParamNameForGetFillLangData]);
-        $foreignKeyName = $this->getNameForeignKeyForTranslationTable();
-        $requestAll = $request->all();
-
-        $mainTable = $this->updateOneRecord($requestAll, $model);
-
-        if ($mainTable === false) {
-            return $mainTable;
+            $modelAttributes = array_merge($translationModel->getAttributes(), $modelAttributes);
         }
 
-        //To avoid ID conflicts with different tables
-        unset($requestAll['id']);
-
-        $translateTable = $this->updateOneRecord($requestAll, $this->getOneRecordForTranslateTable($foreignKeyName, $model->id, $language->id));
-
-        if ($translateTable === false) {
-            return $translateTable;
-        }
-
-        return (new Collection($mainTable))->union(new Collection($translateTable));
+        return $modelAttributes;
     }
 
     /**
@@ -354,7 +168,7 @@ trait CoreBaseModelTrait
      *
      * @return bool
      */
-    protected function isRecordWithTranslationTable(): bool
+    protected function isTranslatable(): bool
     {
         $foreignKeyName = $this->getNameForeignKeyForTranslationTable();
         $isForeignKeyExist = $this->isColumnExistInTable($foreignKeyName, $this->getTranslationTableName());
@@ -469,57 +283,16 @@ trait CoreBaseModelTrait
         return $resultArrForSelect;
     }
 
-    /**
-     * @param $language
-     * @return mixed
-     */
-    protected function getLanguage($language) {
-        return Language::select('id')->where('name', $language)->first();
-    }
-
-    /**
-     * when adding a record to the main table - create empty records in the translation table
-     * if the data did not come from the front-end
-     *
-     * @param int $languageId
-     * @param int $mainModelId
-     * @return void|boolean
-     */
-    protected function createEmptyRecords(int $languageId, int $mainModelId)
+    protected function filterExistingColumnsInTable(array $fields, string $tableName): array
     {
-        $languages = Language::select('id')->whereNotIn('id', [$languageId])->get();
-        foreach ($languages as $language) {
-            $tempArr = [
-                $this->languageNameForeignKey => $language->id,
-                $this->getNameForeignKeyForTranslationTable() => $mainModelId
-            ];
-
-            $modelFill = $this->modelFill($tempArr, $this->modelTranslationClass);
-
-            if ($modelFill === false) {
-                return $modelFill;
+        $filteredFields = [];
+        foreach ($fields as $field) {
+            if ($this->isColumnExistInTable($field, $tableName)) {
+                $filteredFields[] = $field;
             }
         }
-    }
 
-    /**
-     * @param array $data
-     * @param string $modelClassName
-     * @return mixed|boolean
-     */
-    protected function modelFill(array $data, string $modelClassName) {
-        $translationModel = new $modelClassName;
-        $translationModel->fill($data);
-
-        try {
-            $result = $translationModel->save();
-
-            return $result ? $translationModel : false;
-        } catch (\Exception $e) {
-            LoggingService::CRUD_errorsLogging('CoreBaseModelTrait/modelFill - '.$e, Logger::CRITICAL);
-
-            return false;
-        }
+        return $filteredFields;
     }
 
     /**
@@ -533,109 +306,24 @@ trait CoreBaseModelTrait
         return (int) ($request->route($this->getTableSingularName()) ?: $request->route('id'));
     }
 
-    /**
-     * @param $request
-     * @param int $id
-     */
-    protected function setRequestId($request, int $id): void {
-        $request->route()->setParameter('id',  $id);
-    }
-
-    /**
-     * using left or right Join for current $modelClass
-     *
-     * @param $query
-     * @param array $relationshipTableNamesArray
-     * @param string $typeOfJoin
-     * @param string $language
-     * @param string $junctionTable
-     * @return mixed
-     */
-    public function expandData($query, array $relationshipTableNamesArray, string $typeOfJoin, string $language, string $junctionTable = null)
+    protected function parseParameterWithAdditionalValues(string $parametersString): Collection
     {
-        $resultQuery = $query;
-        foreach ($relationshipTableNamesArray as $relationshipTableName) {
-            if ($junctionTable) {
-                $relationshipTableSingularName = Str::singular($relationshipTableName);
-                $relationshipColumnName = $relationshipTableSingularName.'_id';
+        $parameters = explode('|', $parametersString);
+        $parsedParameters = collect();
+        foreach ($parameters as $parameter) {
+            if (str_contains($parameter, ':')) {
+                [$parameterName, $parameterValues] = explode(':', $parameter);
 
-                if ($this->isTableExist($relationshipTableName) && $this->isColumnExistInTable($relationshipColumnName, $this->getTablePluralName())) {
-                    $resultQuery = $resultQuery->{$typeOfJoin}($relationshipTableName, $this->getTablePluralName().'.'.$relationshipColumnName, '=', $relationshipTableName.'.id')
-                        ->addSelect($relationshipTableName.'.*');
-
-                    $resultQuery = $this->expandDataModifySelect($relationshipTableName, $resultQuery, $language);
-                }
+                $values = explode(',', $parameterValues);
+                $parsedParameters->add([
+                    'name' => $parameterName,
+                    'values' => count($values) === 1 ? $values[0] : $values,
+                ]);
             } else {
-                $relationshipColumnName = $this->getTableSingularName().'_id';
-
-                if ($this->isTableExist($relationshipTableName) && $this->isColumnExistInTable($relationshipColumnName, $relationshipTableName)) {
-                    $resultQuery = $resultQuery->{$typeOfJoin}($relationshipTableName, $this->getTablePluralName().'.id', '=', $relationshipTableName.'.'.$relationshipColumnName)
-                        ->addSelect($relationshipTableName.'.*');
-
-                    $resultQuery = $this->expandDataModifySelect($relationshipTableName, $resultQuery, $language);
-                }
-            }
-        }
-        return $resultQuery->addSelect($this->getTablePluralName().'.*');
-    }
-
-    /**
-     * @param string $relationshipTableName
-     * @param $resultQuery
-     * @param string $language
-     * @return mixed
-     */
-    public function expandDataModifySelect(string $relationshipTableName, $resultQuery, string $language)
-    {
-        $relationshipTableSingularName = Str::singular($relationshipTableName);
-
-        $translationsTableName = $relationshipTableSingularName.'_translations';
-
-        if ($this->isTableExist($translationsTableName)) {
-            return $this->getExpandWithTranslate($language, $relationshipTableName, $translationsTableName, $relationshipTableSingularName, $resultQuery);
-        } else {
-            $tableColumnsForTranslations = Config::get('for_base_architecture.table_columns_for_translations');
-
-            foreach ($tableColumnsForTranslations as $tableColumn) {
-                if ($this->isColumnExistInTable($tableColumn, $relationshipTableName)) {
-                    $resultQuery->addSelect($relationshipTableName.'.'.$tableColumn.' as '.$relationshipTableName.'_'.$tableColumn);
-                }
-            }
-
-            return $resultQuery;
-        }
-    }
-
-    /**
-     * @param string $lang
-     * @param string $relationshipTableName
-     * @param string $translationsTableName
-     * @param string $relationshipTableSingularName
-     * @param $resultQuery
-     * @return mixed
-     */
-    public function getExpandWithTranslate(string $lang, string $relationshipTableName, string $translationsTableName, string $relationshipTableSingularName, $resultQuery) {
-        $language = $this->getLanguage($lang);
-
-        $resultQuery->leftJoin(
-            $translationsTableName,
-            $relationshipTableName.'.id',
-            $translationsTableName.'.'.$relationshipTableSingularName.'_id'
-        )
-            ->addSelect($translationsTableName.'.*')
-            ->where($translationsTableName.'.'.$this->languageNameForeignKey, $language->id);
-
-        $tableColumnsForTranslations = Config::get('for_base_architecture.table_columns_for_translations');
-
-        foreach ($tableColumnsForTranslations as $tableColumn) {
-            if ($this->isColumnExistInTable($tableColumn, $relationshipTableName)) {
-                $resultQuery->addSelect($relationshipTableName.'.'.$tableColumn.' as '.$relationshipTableName.'_'.$tableColumn);
-            }
-            if ($this->isColumnExistInTable($tableColumn, $translationsTableName)) {
-                $resultQuery->addSelect($translationsTableName.'.'.$tableColumn.' as '.$translationsTableName.'_'.$tableColumn);
+                $parsedParameters->add(['name' => $parameter]);
             }
         }
 
-        return $resultQuery;
+        return $parsedParameters->count() === 1 ? collect($parsedParameters->first()) : $parsedParameters;
     }
 }

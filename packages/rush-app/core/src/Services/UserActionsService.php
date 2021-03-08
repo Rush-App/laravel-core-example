@@ -2,22 +2,20 @@
 
 namespace RushApp\Core\Services;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use RushApp\Core\Models\Action;
+use RushApp\Core\Models\BaseModelTrait;
 
 class UserActionsService
 {
     public function canUserPerformAction(Request $request): bool
     {
-        return $this->checkModelAction($request);
-    }
-
-    protected function checkModelAction(Request $request): bool
-    {
+        /** @var Model|BaseModelTrait $model */
         $model = $request->route()->getController()->getBaseModel();
         $actionName = $request->route()->getActionMethod();
 
@@ -40,7 +38,7 @@ class UserActionsService
     public function getUserActions(): Collection
     {
         $userId = Auth::id();
-        $cacheTTL = config('boilerplate.user_actions_cache_ttl');
+        $cacheTTL = config('boilerplate.default_cache_ttl');
         return Cache::remember("user-actions.$userId", $cacheTTL, function () use ($userId) {
             return Action::query()
                 ->join('role_action as ra', 'ra.action_id', '=', 'actions.id')

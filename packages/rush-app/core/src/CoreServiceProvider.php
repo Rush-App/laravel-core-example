@@ -24,6 +24,7 @@ class CoreServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->loadConfigs();
+        $this->loadTranslationsFrom(realpath(__DIR__.'/../resources/lang'), 'core');
         $this->registerMigrations();
     }
 

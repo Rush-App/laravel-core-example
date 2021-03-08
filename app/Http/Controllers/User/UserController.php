@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Requests\User\UserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use RushApp\Core\Controllers\BaseController;
 
 class UserController extends BaseController
@@ -17,19 +18,17 @@ class UserController extends BaseController
     protected string $requestClassController = UserRequest::class;
     protected User $userModel;
 
-    public function __construct(User $userModel)
+    public function __construct(User $userModel, Request $request)
     {
         $this->userModel = $userModel;
-        parent::__construct();
+        parent::__construct($request);
     }
 
     public function getOne(Request $request)
     {
-        $result = $this->userModel->getPersonalData($request);
+        $user = Auth::user();
 
-        return $result['error'] === true
-            ? $this->responseWithError($result['message'], $result['code'])
-            : $this->successResponse($result['data']);
+        return $this->successResponse($user);
     }
 
     public function updateOne(Request $request)

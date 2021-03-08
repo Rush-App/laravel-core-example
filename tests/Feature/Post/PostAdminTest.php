@@ -79,10 +79,27 @@ class PostAdminTest extends BaseFeatureTest
         $postData = $this->getDefaultPostData();
 
         $response = $this->postJson($this->entity, $postData);
-        unset($postData['fill_language']);
+        unset($postData['language']);
         $response->assertOk()->assertJsonFragment($postData);
         $this->assertDatabaseCount($this->entity, 1);
         $this->assertDatabaseCount($this->getTranslateTable($this->entity), 1);
+    }
+
+    /**
+     * @test
+     */
+    public function storeWithValidationErrorsTest()
+    {
+        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+
+        $postData = $this->getDefaultPostData();
+        $postData['title'] = 'te';
+
+        $response = $this->postJson($this->entity, $postData);
+        unset($postData['language']);
+        $response->assertStatus(422)->assertJsonValidationErrors('title');
+        $this->assertDatabaseCount($this->entity, 0);
+        $this->assertDatabaseCount($this->getTranslateTable($this->entity), 0);
     }
 
     /**
@@ -103,11 +120,36 @@ class PostAdminTest extends BaseFeatureTest
         $postData['published'] = false;
 
         $response = $this->putJson($this->entity.'/'.$post->id, $postData);
-        unset($postData['fill_language']);
+        unset($postData['language']);
         $response->assertOk()->assertJsonFragment($postData);
 
         $this->assertDatabaseHas($this->getTranslateTable($this->entity), ['title' => $postData['title']]);
         $this->assertDatabaseHas($this->entity, ['published' => false]);
+    }
+
+    /**
+     * @test
+     */
+    public function updateWithValidationErrorsTest()
+    {
+        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+
+        $postData = $this->getDefaultPostData();
+
+        $postData['user_id'] = User::factory()->create()->id;
+        $post = Post::create($postData);
+        $postData['post_id'] = $post->id;
+        $postTranslation = PostTranslation::create($postData);
+
+        $postData['title'] = 'tes';
+        $postData['description'] = 'des';
+        $postData['published'] = false;
+
+        $response = $this->putJson($this->entity.'/'.$post->id, $postData);
+        unset($postData['language']);
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['title', 'description']);
     }
 
     private function getDefaultPostData(): array
@@ -117,7 +159,7 @@ class PostAdminTest extends BaseFeatureTest
             'description' => "test desc",
             'language_id' => $this->currentLanguage->id,
             'published' => true,
-            'fill_language' => $this->currentLanguage->name,
+            'language' => $this->currentLanguage->name,
         ];
     }
 

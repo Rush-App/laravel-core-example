@@ -43,7 +43,7 @@ class PostUserUnauthorizedTest extends BaseFeatureTest
         $postData = $this->getDefaultPostData();
 
         $response = $this->postJson($this->entity, $postData);
-        unset($postData['fill_language']);
+        unset($postData['language']);
 
         $response->assertStatus(401);
 
@@ -63,7 +63,7 @@ class PostUserUnauthorizedTest extends BaseFeatureTest
         $postData['published'] = false;
 
         $response = $this->putJson($this->entity.'/'.$post->id, $postData);
-        unset($postData['fill_language']);
+        unset($postData['language']);
 
         $response->assertStatus(401);
 
@@ -78,7 +78,7 @@ class PostUserUnauthorizedTest extends BaseFeatureTest
             'description' => "test desc",
             'language_id' => $this->currentLanguage->id,
             'published' => true,
-            'fill_language' => $this->currentLanguage->name,
+            'language' => $this->currentLanguage->name,
         ];
     }
 
