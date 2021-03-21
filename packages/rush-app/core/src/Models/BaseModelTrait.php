@@ -2,8 +2,10 @@
 
 namespace RushApp\Core\Models;
 
+use App\Models\Post\Post;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Monolog\Logger;
@@ -45,10 +47,7 @@ trait BaseModelTrait
         $this->addWithData($query, $requestParameters, $withRelationNames);
         $this->addQueryOptions($query, $requestParameters);
 
-        //Parameters for "where", under what conditions the request will be displayed
-        $whereParams = $this->getQueryParams($this->filteringForParams($requestParameters));
-
-        return $query->where($whereParams);
+        return $query;
     }
 
     public function getQueryBuilderOne(array $requestParameters, int $entityId, array $withRelationNames): Builder
@@ -86,7 +85,9 @@ trait BaseModelTrait
     protected function addQueryOptions(Builder $query, array $requestParameters)
     {
         //Select only this data
-        if(!empty($select = $this->getValueForExistingTableColumns($requestParameters, ModelRequestParameters::SELECTED_FIELDS))) {
+        if(!empty($requestParameters[ModelRequestParameters::SELECTED_FIELDS])
+            &&!empty($select = $this->getValueForExistingTableColumns($requestParameters[ModelRequestParameters::SELECTED_FIELDS]))
+        ) {
             $query->select($select);
         }
 
@@ -94,21 +95,73 @@ trait BaseModelTrait
         if(!empty($requestParameters[ModelRequestParameters::ORDER_BY_FIELD])) {
             $parsedOrderParameters = $this->parseParameterWithAdditionalValues($requestParameters[ModelRequestParameters::ORDER_BY_FIELD]);
             if ($parsedOrderParameters->isNotEmpty()) {
-                $query->orderBy($parsedOrderParameters->get('name'), $parsedOrderParameters->get('values', 'asc'));
+                foreach ($parsedOrderParameters as $parsedOrderParameter) {
+                    $query->orderBy($parsedOrderParameter['name'], $parsedOrderParameter['values'][0] ?? 'asc');
+                }
             }
         }
 
-        //give data where some field is whereNotNull
+        //give data where some field is NotNull
         if (
             !empty($requestParameters[ModelRequestParameters::WHERE_NOT_NULL]) &&
-            !empty($whereNotNull = $this->getValueForExistingTableColumns($requestParameters, ModelRequestParameters::WHERE_NOT_NULL))
+            !empty($whereNotNull = $this->getValueForExistingTableColumns($requestParameters[ModelRequestParameters::WHERE_NOT_NULL]))
         ) {
             $query->whereNotNull($whereNotNull);
+        }
+
+        //give data where some field is Null
+        if (
+            !empty($requestParameters[ModelRequestParameters::WHERE_NULL]) &&
+            !empty($whereNull = $this->getValueForExistingTableColumns($requestParameters[ModelRequestParameters::WHERE_NULL]))
+        ) {
+            $query->whereNull($whereNull);
+        }
+
+        if (!empty($requestParameters[ModelRequestParameters::WHERE_BETWEEN])) {
+            $parsedParameters = $this->parseParameterWithAdditionalValues($requestParameters[ModelRequestParameters::WHERE_BETWEEN]);
+            if ($parsedParameters->isNotEmpty()) {
+                foreach ($parsedParameters as $parsedParameter) {
+                    $query->whereBetween($parsedParameter['name'], $parsedParameter['values']);
+                }
+            }
+        }
+
+        if (!empty($requestParameters[ModelRequestParameters::WHERE_IN])) {
+            $parsedParameters = $this->parseParameterWithAdditionalValues($requestParameters[ModelRequestParameters::WHERE_IN]);
+            if ($parsedParameters->isNotEmpty()) {
+                foreach ($parsedParameters as $parsedParameter) {
+                    $query->whereIn($parsedParameter['name'], $parsedParameter['values']);
+                }
+            }
+        }
+
+        if (!empty($requestParameters[ModelRequestParameters::WHERE_NOT_IN])) {
+            $parsedParameters = $this->parseParameterWithAdditionalValues($requestParameters[ModelRequestParameters::WHERE_NOT_IN]);
+            if ($parsedParameters->isNotEmpty()) {
+                foreach ($parsedParameters as $parsedParameter) {
+                    $query->whereNotIn($parsedParameter['name'], $parsedParameter['values']);
+                }
+            }
         }
 
         //Get limited data
         if(!empty($requestParameters[ModelRequestParameters::LIMIT])) {
             $query->limit($requestParameters[ModelRequestParameters::LIMIT]);
+        }
+
+        if(!empty($requestParameters[ModelRequestParameters::OFFSET])) {
+            $query->offset($requestParameters[ModelRequestParameters::OFFSET]);
+        }
+
+        //Parameters for "where", under what conditions the request will be displayed
+        $rawWhereParams = Arr::except($this->filteringForParams($requestParameters), ['language_id']);
+        foreach ($rawWhereParams as $name => $value) {
+            if (preg_match('/^(<>|<|>|<\=|>\=|like)\|/', $value, $matched)) {
+                $operator = trim($matched[0], '|');
+                $query->where($name, $operator, str_replace("$operator|", '', $value));
+            } else {
+                $query->where($name, $value);
+            }
         }
     }
 

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  *
  * @property int $id
  * @property bool $published
+ * @property Carbon $published_at
  * @property int $user_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -29,7 +30,12 @@ class Post extends BaseModel
 
     protected $fillable = [
         'published',
+        'published_at',
         'user_id',
+    ];
+
+    protected $dates = [
+        'published_at',
     ];
 
     public function user(): BelongsTo

@@ -106,7 +106,10 @@ trait CoreBaseModelTrait
             $translationsTableName,
             $this->tablePluralName.'.id',
             $translationsTableName.'.'.$this->getNameForeignKeyForTranslationTable()
-        )->where($translationsTableName.'.'.ModelRequestParameters::LANGUAGE_FOREIGN_KEY, $languageId);
+        )->where(function ($query) use ($translationsTableName, $languageId) {
+            $query->where($translationsTableName.'.'.ModelRequestParameters::LANGUAGE_FOREIGN_KEY, $languageId)
+                ->orWhereNull(ModelRequestParameters::LANGUAGE_FOREIGN_KEY);
+        });
     }
 
     /**
@@ -200,8 +203,9 @@ trait CoreBaseModelTrait
      * @param array $params - column names in the table (use for filter 'where')
      * @return array
      */
-    protected function filteringForParams(array $params): array {
-        return array_filter($params, fn($v, $k) => $this->isColumnExistInTable($k, $this->getTablePluralName()), ARRAY_FILTER_USE_BOTH);
+    protected function filteringForParams(array $params): array
+    {
+        return array_filter($params, fn($v, $k) => ($this->isColumnExistInTable($k, $this->getTablePluralName()) || $this->isColumnExistInTable($k, $this->getTranslationTableName())), ARRAY_FILTER_USE_BOTH);
     }
 
     /**
@@ -247,30 +251,27 @@ trait CoreBaseModelTrait
      * Convert it to an array for substitution to query
      * Example: http://127.0.0.1:8000/test?selected_fields=year,recipient_company,id&order_by=year,recipient_company,id
      *
-     * @param array $params
-     * @param string $paramsFieldName
+     * @param string $fields
      * @return array
      */
-    protected function getValueForExistingTableColumns (array $params, string $paramsFieldName): array
+    protected function getValueForExistingTableColumns (string $fields): array
     {
         $resultArrForSelect = [];
         $modelTranslationClassExist = class_exists($this->modelTranslationClass);
 
-        if (array_key_exists($paramsFieldName, $params)) {
-            $selectedFields = explode(",", $params[$paramsFieldName]);
-            foreach ($selectedFields as $selectedField) {
+        $selectedFields = explode(",", $fields);
+        foreach ($selectedFields as $selectedField) {
 
-                //To avoid duplicate id in different tables. Using the ID of the main table
-                if (($modelTranslationClassExist && $selectedField !== 'id') || !$modelTranslationClassExist) {
-                    if ($this->isColumnExistInTable($selectedField, $this->getTranslationTableName())) {
-                        array_push($resultArrForSelect, $selectedField);
-                    }
-                    if ($this->isColumnExistInTable($selectedField, $this->getTablePluralName())) {
-                        array_push($resultArrForSelect, $selectedField);
-                    }
-                } else {
-                    array_push($resultArrForSelect, $this->getTablePluralName().'.id');
+            //To avoid duplicate id in different tables. Using the ID of the main table
+            if (($modelTranslationClassExist && $selectedField !== 'id') || !$modelTranslationClassExist) {
+                if ($this->isColumnExistInTable($selectedField, $this->getTranslationTableName())) {
+                    array_push($resultArrForSelect, $selectedField);
                 }
+                if ($this->isColumnExistInTable($selectedField, $this->getTablePluralName())) {
+                    array_push($resultArrForSelect, $selectedField);
+                }
+            } else {
+                array_push($resultArrForSelect, $this->getTablePluralName().'.id');
             }
         }
 
@@ -308,16 +309,19 @@ trait CoreBaseModelTrait
             if (str_contains($parameter, ':')) {
                 [$parameterName, $parameterValues] = explode(':', $parameter);
 
-                $values = explode(',', $parameterValues);
+                if (!$this->getValueForExistingTableColumns($parameterName)) {
+                    continue;
+                }
+
                 $parsedParameters->add([
                     'name' => $parameterName,
-                    'values' => count($values) === 1 ? $values[0] : $values,
+                    'values' => explode(',', $parameterValues),
                 ]);
             } else {
                 $parsedParameters->add(['name' => $parameter]);
             }
         }
 
-        return $parsedParameters->count() === 1 ? collect($parsedParameters->first()) : $parsedParameters;
+        return $parsedParameters;
     }
 }

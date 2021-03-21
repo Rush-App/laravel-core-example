@@ -40,6 +40,7 @@ class PostFactory extends Factory
     {
         return [
             'published' => true,
+            'published_at' => now(),
             'user_id' => User::factory(),
         ];
     }
