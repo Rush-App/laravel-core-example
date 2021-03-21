@@ -19,11 +19,7 @@ Route::group(['middleware' => 'language'], function () {
     Route::post('refresh-token', 'User\\AuthController@refreshToken');
 
     Route::group(['middleware' => 'jwt-auth:user'], function () {
-        Route::get('user', 'User\\UserController@getOne');
-        Route::put('user/{id}', 'User\\UserController@updateOne');
-
         Route::post('logout', 'User\\AuthController@logout');
-        Route::post('change-password', 'User\\AuthController@changePassword');
 
         Route::resource('posts', 'PostController')->middleware('check-user-action');
         Route::resource('categories', 'CategoryController')->middleware('check-user-action');

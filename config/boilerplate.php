@@ -16,6 +16,6 @@ return [
         'auth' =>  'logs/auth',
         'core' => 'logs/core',
     ],
-//    'user_model' => \App\Models\User::class,
-    'user_model' => \RushApp\Core\Models\User::class,
+    'user_model' => \App\Models\User::class,
+//    'user_model' => \RushApp\Core\Models\User::class,
 ];

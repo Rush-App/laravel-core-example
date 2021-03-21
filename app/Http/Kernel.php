@@ -3,7 +3,7 @@
 namespace App\Http;
 
 use App\Http\Middleware\JWTAuth;
-use App\Http\Middleware\SetLanguage;
+use RushApp\Core\Middleware\SetLanguage;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use RushApp\Core\Middleware\CheckUserAction;
 
@@ -23,8 +23,6 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-        \App\Http\Middleware\ModifyHeaders::class,
-//        \App\Http\Middleware\ServerErrorsHandle::class,
     ];
 
     /**

@@ -8,155 +8,85 @@ use Monolog\Handler\StreamHandler;
 class LoggingService
 {
     /**
-     * @var array
-     */
-    protected static array $loggersList = [
-        'authLogging' => [
-            'name' => 'authLogging',
-            'path' => 'logs/auth-process.log'
-        ],
-        'sendMessageLogging' => [
-            'name' => 'sendMessageLogging',
-            'path' => 'logs/send-message.log'
-        ],
-        'sendEmailLogging' => [
-            'name' => 'sendEmailLogging',
-            'path' => 'logs/send-email.log'
-        ],
-        'forFilesLogging' => [
-            'name' => 'forFilesLogging',
-            'path' => 'logs/for-files.log'
-        ],
-        'CRUD_errorsLogging' => [
-            'name' => 'CRUD_errorsLogging',
-            'path' => 'logs/crud-errors.log'
-        ],
-        'criticalServerErrorsLogging' => [
-            'name' => 'criticalServerErrorsLogging',
-            'path' => 'logs/critical-server-errors.log'
-        ]
-    ];
-
-    /**
      * @param string $message
      * @param $level
      */
-    public static function authLogging (string $message, int $level): void
+    public static function auth(mixed $message, int $level): void
     {
-        self::addLoggerMessage(
-            self::$loggersList['authLogging']['name'],
-            self::$loggersList['authLogging']['path'],
-            $level,
-            $message
+        $logger = self::getLogger(
+            __FUNCTION__,
+            config('boilerplate.log_paths.auth'),
+            $level
         );
+
+        $logger->log($level, $message);
     }
 
-    /**
-     * @param string $message
-     * @param $level
-     */
-    public static function sendMessageLogging (string $message, int $level): void
+    public static function debug(mixed $message): void
     {
-        self::addLoggerMessage(
-            self::$loggersList['sendMessageLogging']['name'],
-            self::$loggersList['sendMessageLogging']['path'],
-            $level,
-            $message
-        );
+        self::logCore($message, Logger::DEBUG);
     }
 
-    /**
-     * @param string $message
-     * @param $level
-     */
-    public static function sendEmailLogging (string $message, int $level): void
+    public static function info(mixed $message): void
     {
-        self::addLoggerMessage(
-            self::$loggersList['sendEmailLogging']['name'],
-            self::$loggersList['sendEmailLogging']['path'],
-            $level,
-            $message
-        );
+        self::logCore($message, Logger::INFO);
     }
 
-    /**
-     * @param string $message
-     * @param $level
-     */
-    public static function forFilesLogging (string $message, int $level): void
+    public static function notice(mixed $message): void
     {
-        self::addLoggerMessage(
-            self::$loggersList['forFilesLogging']['name'],
-            self::$loggersList['forFilesLogging']['path'],
-            $level,
-            $message
-        );
+        self::logCore($message, Logger::NOTICE);
     }
 
-    /**
-     * @param string $message
-     * @param $level
-     */
-    public static function CRUD_errorsLogging (string $message, int $level): void
+    public static function warning(mixed $message): void
     {
-        self::addLoggerMessage(
-            self::$loggersList['CRUD_errorsLogging']['name'],
-            self::$loggersList['CRUD_errorsLogging']['path'],
-            $level,
-            $message
-        );
+        self::logCore($message, Logger::WARNING);
     }
 
-    /**
-     * @param string $message
-     * @param $level
-     */
-    public static function criticalServerErrorsLogging (string $message, int $level): void
+    public static function error(mixed $message): void
     {
-        self::addLoggerMessage(
-            self::$loggersList['criticalServerErrorsLogging']['name'],
-            self::$loggersList['criticalServerErrorsLogging']['path'],
-            $level,
-            $message
+        self::logCore($message, Logger::ERROR);
+    }
+
+    public static function critical(mixed $message): void
+    {
+        self::logCore($message, Logger::CRITICAL);
+    }
+
+    public static function alert(mixed $message): void
+    {
+        self::logCore($message, Logger::ALERT);
+    }
+
+    public static function emergency(mixed $message): void
+    {
+        self::logCore($message, Logger::EMERGENCY);
+    }
+
+    protected static function logCore(mixed $message, int $level)
+    {
+        $levelName = strtolower(Logger::getLevelName($level));
+
+        $logger = self::getLogger(
+            $levelName,
+            config('boilerplate.log_paths.core'),
+            $level
         );
+
+        $logger->$levelName($message);
     }
 
     /**
      * @param string $loggerName
      * @param string $path
-     * @param $level
-     * @param string $message
+     * @param int $level
+     * @return Logger
      */
-    public static function addLoggerMessage(string $loggerName, string $path, $level, string $message): void {
+    protected static function getLogger(string $loggerName, string $path, int $level): Logger
+    {
         $log = new Logger($loggerName);
         $log->pushHandler(new StreamHandler(storage_path($path), $level));
 
-        switch ($level) {
-            case Logger::DEBUG:
-                $log->debug($message);
-                break;
-            case Logger::INFO:
-                $log->info($message);
-                break;
-            case Logger::NOTICE:
-                $log->notice($message);
-                break;
-            case Logger::WARNING:
-                $log->warning($message);
-                break;
-            case Logger::ERROR:
-                $log->error($message);
-                break;
-            case Logger::CRITICAL:
-                $log->critical($message);
-                break;
-            case Logger::ALERT:
-                $log->alert($message);
-                break;
-            case Logger::EMERGENCY:
-                $log->emergency($message);
-                break;
-        }
+        return $log;
     }
 }
 

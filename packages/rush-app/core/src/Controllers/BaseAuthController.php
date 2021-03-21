@@ -1,13 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace RushApp\Core\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Monolog\Logger;
-use RushApp\Core\Controllers\BaseController;
 use RushApp\Core\Exceptions\CoreHttpException;
 use RushApp\Core\Models\CoreBaseModelTrait;
 use RushApp\Core\Services\LoggingService;
@@ -26,8 +24,11 @@ abstract class BaseAuthController extends BaseController
     public function registerAttempt(Request $request)
     {
         try {
-            $user = User::create($request->all());
-            return $this->loginAttempt($request->only(['email', 'password']));
+            $userClass = $this->getUserClass();
+            $user = $userClass::create($request->all());
+            $token = Auth::guard($this->guard)->login($user);
+
+            return $this->successResponse(['token' => $token]);
         } catch (\Exception $e) {
             LoggingService::auth(
                 Config::get('system_messages.could_not_register.message') . $e->getMessage(),
@@ -47,19 +48,6 @@ abstract class BaseAuthController extends BaseController
         return $this->successResponse(['token' => $token]);
     }
 
-    public function changePasswordAttempt($request) {
-        $user = User::find(Auth::id());
-
-        if (!$token = Auth::guard($this->guard)->attempt(['email' => $user->email, 'password' => $request->old_password])) {
-            return $this->responseWithError(__('response_messages.incorrect_change_password'), 403);
-        }
-
-        $user->password = $request->password;
-        $user->save();
-
-        return $this->loginAttempt(['email' => $user->email, 'password' => $request->password]);
-    }
-
     public function refreshToken()
     {
         try {
@@ -76,5 +64,10 @@ abstract class BaseAuthController extends BaseController
         Auth::guard($this->guard)->logout();
 
         return $this->successResponse(['message' => __('response_messages.logout')]);
+    }
+
+    protected function getUserClass(): string
+    {
+        return config('boilerplate.user_model');
     }
 }

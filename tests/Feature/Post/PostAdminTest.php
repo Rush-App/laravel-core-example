@@ -7,6 +7,7 @@ use App\Models\Post\PostTranslation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
+use RushApp\Core\Models\Role;
 use Tests\BaseFeatureTest;
 
 class PostAdminTest extends BaseFeatureTest

@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Http\Controllers\BaseAuthController;
-use App\Http\Requests\User\ChangePasswordRequest;
 use App\Http\Requests\User\RegisterRequest;
 use App\Models\User;
+use RushApp\Core\Controllers\BaseAuthController;
 
 class AuthController extends BaseAuthController
 {
@@ -19,10 +18,5 @@ class AuthController extends BaseAuthController
     public function register(RegisterRequest $request)
     {
         return $this->registerAttempt($request);
-    }
-
-    public function changePassword(ChangePasswordRequest $request)
-    {
-        return $this->changePasswordAttempt($request);
     }
 }

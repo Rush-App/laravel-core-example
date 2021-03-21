@@ -1,13 +1,13 @@
 <?php
 
-namespace Tests\Feature\Auth;
+namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
-use Tests\TestCase;
+use Tests\BaseFeatureTest;
 
-class RegisterTest extends TestCase
+class AuthTest extends BaseFeatureTest
 {
     use RefreshDatabase;
 
@@ -29,5 +29,36 @@ class RegisterTest extends TestCase
         $this->assertDatabaseMissing('users', [
             'password' => 'password',
         ]);
+    }
+
+    /**
+     * @test
+     */
+    public function login()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->postJson('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonStructure([
+                'token'
+            ]);
+    }
+
+    /**
+     * @test
+     */
+    public function logout()
+    {
+        $user = User::factory()->create();
+        $this->signIn($user);
+
+        $this->postJson('/logout')->assertOk();
+        $this->postJson('/logout')->assertStatus(401);
     }
 }
