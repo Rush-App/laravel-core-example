@@ -12,7 +12,7 @@ use RushApp\Core\Database\Factories\LanguageFactory;
  * @property int $id
  * @property string $name
  *
- * @package App\Models
+ * @package RushApp\Core\Models
  */
 class Language extends Model
 {

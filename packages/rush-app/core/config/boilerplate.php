@@ -12,9 +12,9 @@ return [
     'http_statuses' => [
         'forbidden' => 403,
     ],
-    'log_paths' => [
-        'auth' =>  'logs/auth',
-        'core' => 'logs/core',
+    'log_groups' => [
+        'auth' => 'auth',
+        'core' => 'core',
     ],
     'user_model' => \RushApp\Core\Models\User::class,
 ];

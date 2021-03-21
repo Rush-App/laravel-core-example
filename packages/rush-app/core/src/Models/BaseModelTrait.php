@@ -135,7 +135,7 @@ trait BaseModelTrait
 
             return $modelAttributes;
         } catch (\Exception $e) {
-            LoggingService::CRUD_errorsLogging('Model creation error - '.$e, Logger::CRITICAL);
+            LoggingService::critical('Model creation error - '.$e->getMessage());
             throw new CoreHttpException(409, __('core::error_messages.save_error'));
         }
     }
@@ -153,10 +153,12 @@ trait BaseModelTrait
     {
         $model = $this->getOneRecord($entityId);
         if (!$model) {
+            LoggingService::notice('Cannot update. Model '.static::class.' '.$entityId.' not found');
             throw new CoreHttpException(404, __('core::error_messages.not_found'));
         }
 
         if (!$this->canDoActionWithModel($model, $columnName, $valueForColumnName)) {
+            LoggingService::notice('Cannot update. Permission denied for model'.static::class.' '.$entityId);
             throw new CoreHttpException(403, __('core::error_messages.permission_denied'));
         }
 
@@ -177,14 +179,19 @@ trait BaseModelTrait
         /** @var Model $model */
         $model = $this->getOneRecord($entityId);
         if (!$model) {
+            LoggingService::notice('Cannot delete. Model '.static::class.' '.$entityId.' not found');
             throw new CoreHttpException(404, __('core::error_messages.not_found'));
         }
 
         if (!$this->canDoActionWithModel($model, $columnName, $valueForColumnName)) {
+            LoggingService::notice('Cannot delete. Permission denied for model'.static::class.' '.$entityId);
             throw new CoreHttpException(403, __('core::error_messages.permission_denied'));
         }
 
-        if (!$model->delete()) {
+        try {
+            $model->delete();
+        } catch (\Exception $e) {
+            LoggingService::critical('Cannot delete. Model '.static::class.' '.$entityId.' '.$e->getMessage());
             throw new CoreHttpException(409, __('core::error_messages.destroy_error'));
         }
     }

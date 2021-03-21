@@ -17,7 +17,7 @@ use RushApp\Core\Database\Factories\RoleFactory;
  *
  * @property-read Action[]|Collection $actions
  *
- * @package App\Models
+ * @package RushApp\Core\Models
  */
 class Role extends Model
 {

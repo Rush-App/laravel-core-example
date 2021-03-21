@@ -2,24 +2,15 @@
 
 namespace RushApp\Core\Services;
 
+use Illuminate\Support\Facades\File;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
 class LoggingService
 {
-    /**
-     * @param string $message
-     * @param $level
-     */
     public static function auth(mixed $message, int $level): void
     {
-        $logger = self::getLogger(
-            __FUNCTION__,
-            config('boilerplate.log_paths.auth'),
-            $level
-        );
-
-        $logger->log($level, $message);
+        self::getLogger(config('boilerplate.log_groups.auth'), $level)->log($level, $message);
     }
 
     public static function debug(mixed $message): void
@@ -65,26 +56,22 @@ class LoggingService
     protected static function logCore(mixed $message, int $level)
     {
         $levelName = strtolower(Logger::getLevelName($level));
-
-        $logger = self::getLogger(
-            $levelName,
-            config('boilerplate.log_paths.core'),
-            $level
-        );
+        $logger = self::getLogger(config('boilerplate.log_groups.core'), $level);
 
         $logger->$levelName($message);
     }
 
-    /**
-     * @param string $loggerName
-     * @param string $path
-     * @param int $level
-     * @return Logger
-     */
-    protected static function getLogger(string $loggerName, string $path, int $level): Logger
+    protected static function getLogger(string $logGroupName, int $level): Logger
     {
-        $log = new Logger($loggerName);
-        $log->pushHandler(new StreamHandler(storage_path($path), $level));
+        $log = new Logger(config('app.env'));
+
+        $logDestinationPath = storage_path('logs/'.$logGroupName);
+        if (!File::isDirectory($logDestinationPath)) {
+            File::makeDirectory($logDestinationPath, 0755, true);
+        }
+        $logFileName = now()->format('Y-m-d').'.log';
+
+        $log->pushHandler(new StreamHandler($logDestinationPath.'/'.$logFileName, $level));
 
         return $log;
     }

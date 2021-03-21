@@ -4,6 +4,7 @@ namespace Tests;
 
 use App\Models\User;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use RushApp\Core\Models\Action;
@@ -23,6 +24,7 @@ class BaseFeatureTest extends TestCase
     {
         parent::setUp();
 
+        Artisan::call('cache:clear');
         $this->currentLanguage = Language::factory()->create();
     }
 

@@ -2,20 +2,14 @@
 
 namespace RushApp\Core\Models;
 
-use App\Models\Post\Post;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Monolog\Logger;
 use RushApp\Core\Enums\ModelRequestParameters;
-use RushApp\Core\Exceptions\CoreHttpException;
-use RushApp\Core\Services\LoggingService;
 use RushApp\Core\Services\UserActionsService;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 trait CoreBaseModelTrait
 {
