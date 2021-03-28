@@ -87,7 +87,7 @@ class BaseFeatureTest extends TestCase
 
     private function getBaseActions(): array
     {
-        return config('boilerplate.action_names', []);
+        return config('rushapp_core.action_names', []);
     }
 
     protected function getTranslateTable($entity): string

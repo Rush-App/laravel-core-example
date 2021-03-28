@@ -2495,12 +2495,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Rush-App/core.git",
-                "reference": "f77823e702748aa45a6b1401a65dca11d5e894fa"
+                "reference": "1b6695782ea3d19c2783c23ea3c0146844a57289"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Rush-App/core/zipball/f77823e702748aa45a6b1401a65dca11d5e894fa",
-                "reference": "f77823e702748aa45a6b1401a65dca11d5e894fa",
+                "url": "https://api.github.com/repos/Rush-App/core/zipball/1b6695782ea3d19c2783c23ea3c0146844a57289",
+                "reference": "1b6695782ea3d19c2783c23ea3c0146844a57289",
                 "shasum": ""
             },
             "require": {
@@ -2540,7 +2540,7 @@
                 "issues": "https://github.com/Rush-App/core/issues",
                 "source": "https://github.com/Rush-App/core/tree/master"
             },
-            "time": "2021-03-28T18:53:01+00:00"
+            "time": "2021-03-28T19:55:32+00:00"
         },
         {
             "name": "swiftmailer/swiftmailer",

@@ -4,6 +4,10 @@ namespace Tests\Feature\Category;
 
 use App\Models\Category;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
+use RushApp\Core\Models\Action;
+use RushApp\Core\Models\Language;
+use RushApp\Core\Models\Role;
 use Tests\BaseFeatureTest;
 
 class CategoryAdminTest extends BaseFeatureTest
