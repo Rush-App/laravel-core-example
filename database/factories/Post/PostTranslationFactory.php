@@ -27,7 +27,7 @@ class PostTranslationFactory extends Factory
         $languageId = Language::query()->first() ?: new Language(['name' => 'en']);
         return [
             'title' => $this->faker->sentence(),
-            'description' => $this->faker->sentences(4, true),
+            'description' => $this->faker->sentences(1, true),
             'post_id' => Post::factory(),
             'language_id' => $languageId,
         ];

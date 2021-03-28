@@ -7,6 +7,7 @@ use App\Models\Post\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Tests\BaseFeatureTest;
 
 class PostExpandTest extends BaseFeatureTest
@@ -119,5 +120,15 @@ class PostExpandTest extends BaseFeatureTest
                     ]
                 ]
             ]);
+
+        $sqlQueryNumber = 0;
+        DB::listen(function($query) use (&$sqlQueryNumber) {
+            $sqlQueryNumber++;
+        });
+
+        $response = $this->json('GET', $this->entity, [
+            'with' => 'user:id,name,email|categories:id,name,updated_at',
+        ]);
+        $this->assertLessThanOrEqual(3, $sqlQueryNumber);
     }
 }

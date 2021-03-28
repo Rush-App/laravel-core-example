@@ -3,7 +3,11 @@
 namespace Tests\Feature\Post;
 
 use App\Models\Post\Post;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Tests\BaseFeatureTest;
 
 class PostQueryParamsTest extends BaseFeatureTest
@@ -151,16 +155,18 @@ class PostQueryParamsTest extends BaseFeatureTest
     {
         $this->signIn()->assignAllActionsForAdminUser($this->entity);
 
-        Post::factory()->count(10)->create();
-        Post::factory()->count(5)->create([
+        $todayPosts = Post::factory()->count(10)->create();
+        $lastWeekPosts = Post::factory()->count(5)->create([
             'published_at' => now()->subDays(7)
         ]);
 
+        $fromPostId = $todayPosts->last()->id;
+        $toPostId = $lastWeekPosts[2]->id;
         $fromDate = now()->subDays(10)->format('Y-m-d');
         $toDate = now()->subDays(5)->format('Y-m-d');
 
         $response = $this->json('GET', $this->entity, [
-            'where_between' => "post_id:13,20|published_at:$fromDate,$toDate",
+            'where_between' => "post_id:$fromPostId,$toPostId|published_at:$fromDate,$toDate",
         ]);
 
         $this->assertDatabaseCount($this->entity, 15);
@@ -174,10 +180,17 @@ class PostQueryParamsTest extends BaseFeatureTest
     {
         $this->signIn()->assignAllActionsForAdminUser($this->entity);
 
-        Post::factory()->count(20)->create();
+        $posts = Post::factory()->count(20)->create();
+
+        $postIds = $posts->pluck('id');
+        $searchedPostIds = $postIds->slice(0, 2)->merge(
+            $postIds->slice(-3, 3)
+        )->implode(',');
+
+        $searchedUserIds = User::query()->pluck('id')->slice(0, 3)->implode(',');
 
         $response = $this->json('GET', $this->entity, [
-            'where_in' => "post_id:1,2,4,6,20|user_id:1,2,3",
+            'where_in' => "post_id:$searchedPostIds|user_id:$searchedUserIds",
         ]);
 
         $this->assertDatabaseCount($this->entity, 20);
@@ -191,10 +204,17 @@ class PostQueryParamsTest extends BaseFeatureTest
     {
         $this->signIn()->assignAllActionsForAdminUser($this->entity);
 
-        Post::factory()->count(20)->create();
+        $posts = Post::factory()->count(20)->create();
+
+        $postIds = $posts->pluck('id');
+        $searchedPostIds = $postIds->slice(3, 2)->merge(
+            $postIds->slice(-3, 3)
+        )->implode(',');
+
+        $searchedUserIds = User::query()->pluck('id')->slice(10, 1)->implode(',');
 
         $response = $this->json('GET', $this->entity, [
-            'where_not_in' => "post_id:1,2,4,6,20|user_id:20",
+            'where_not_in' => "post_id:$searchedPostIds|user_id:$searchedUserIds",
         ]);
 
         $this->assertDatabaseCount($this->entity, 20);
@@ -208,7 +228,7 @@ class PostQueryParamsTest extends BaseFeatureTest
     {
         $this->signIn()->assignAllActionsForAdminUser($this->entity);
 
-        Post::factory()->count(20)->create();
+        $todayPosts = Post::factory()->count(20)->create();
         Post::factory()->count(2)->create([
             'published_at' => now()->subDays(2),
         ]);
@@ -223,7 +243,7 @@ class PostQueryParamsTest extends BaseFeatureTest
         ])->assertOk()->assertJsonCount(1);
 
         $this->json('GET', $this->entity, [
-            'post_id' => '<>|1',
+            'post_id' => '<>|'.$todayPosts->first()->id,
         ])->assertOk()->assertJsonCount(21);
 
         $this->json('GET', $this->entity, [
@@ -235,11 +255,11 @@ class PostQueryParamsTest extends BaseFeatureTest
         ])->assertOk()->assertJsonCount(20);
 
         $this->json('GET', $this->entity, [
-            'post_id' => '<=|5',
+            'post_id' => '<=|'.$todayPosts->slice(0, 5)->last()->id,
         ])->assertOk()->assertJsonCount(5);
 
         $this->json('GET', $this->entity, [
-            'post_id' => '>=|10',
+            'post_id' => '>=|'.$todayPosts->slice(0, 10)->last()->id,
         ])->assertOk()->assertJsonCount(13);
     }
 }
