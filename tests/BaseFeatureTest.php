@@ -9,23 +9,19 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use RushApp\Core\Models\Action;
 use RushApp\Core\Models\Language;
-use RushApp\Core\Models\Property;
 use RushApp\Core\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class BaseFeatureTest extends TestCase
 {
-    /**
-     * @var Language
-     */
-    protected $currentLanguage;
+    protected Language $currentLanguage;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         Artisan::call('cache:clear');
-        $this->currentLanguage = Language::factory()->create();
+        $this->currentLanguage = Language::query()->first();
     }
 
     protected function signIn(Authenticatable $user = null, string $guard = null)
@@ -50,14 +46,15 @@ class BaseFeatureTest extends TestCase
         $user = Auth::user();
         $user->roles()->save($role);
 
-        $property = Property::create(['is_owner' => false]);
         foreach ($this->getBaseActions() as $actionName) {
             $action = Action::create([
                 'entity_name' => $entity,
                 'action_name' => $actionName,
             ]);
 
-            $role->actions()->attach($action->id, ['property_id' => $property->id]);
+            $role->actions()->attach($action->id, [
+                'is_owner' => false,
+            ]);
         }
 
         return $this;
@@ -74,13 +71,14 @@ class BaseFeatureTest extends TestCase
         $user = Auth::user();
         $user->roles()->save($role);
 
-        $property = Property::create(['is_owner' => $isOwner]);
         $action = Action::create([
             'entity_name' => $entity,
             'action_name' => $actionName,
         ]);
 
-        $role->actions()->attach($action->id, ['property_id' => $property->id]);
+        $role->actions()->attach($action->id, [
+            'is_owner' => $isOwner,
+        ]);
 
         return $this;
     }
