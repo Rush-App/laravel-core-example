@@ -2,9 +2,7 @@
 
 namespace Tests\Feature\Post;
 
-use App\Models\Category;
 use App\Models\Post\Post;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +17,7 @@ class PostExpandTest extends BaseFeatureTest
     /** @test */
     public function indexWithRelationsTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         /** @var Post[]|Collection $posts */
         $posts = Post::factory()->count(10)->create();
@@ -60,7 +58,7 @@ class PostExpandTest extends BaseFeatureTest
     /** @test */
     public function indexWithRelationsAndDefinedFieldsTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         /** @var Post[]|Collection $posts */
         $posts = Post::factory()->count(10)->create();

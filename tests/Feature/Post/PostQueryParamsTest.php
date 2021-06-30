@@ -3,12 +3,8 @@
 namespace Tests\Feature\Post;
 
 use App\Models\Post\Post;
-use App\Models\Post\PostTranslation;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
 use Tests\BaseFeatureTest;
 
 class PostQueryParamsTest extends BaseFeatureTest
@@ -20,7 +16,7 @@ class PostQueryParamsTest extends BaseFeatureTest
     /** @test */
     public function indexLimitTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $posts = Post::factory()->count(20)->create();
 
@@ -36,7 +32,7 @@ class PostQueryParamsTest extends BaseFeatureTest
     /** @test */
     public function indexOffsetTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $posts = Post::factory()->count(20)->create();
 
@@ -52,7 +48,7 @@ class PostQueryParamsTest extends BaseFeatureTest
     /** @test */
     public function indexPaginateTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $posts = Post::factory()->count(20)->create();
 
@@ -73,7 +69,7 @@ class PostQueryParamsTest extends BaseFeatureTest
     /** @test */
     public function indexSelectedFieldsTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $posts = Post::factory()->count(10)->create();
 
@@ -95,7 +91,7 @@ class PostQueryParamsTest extends BaseFeatureTest
     /** @test */
     public function indexWhereNotNullTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $posts = Post::factory()->count(10)->create();
         Post::create(Post::factory()->raw());
@@ -113,7 +109,7 @@ class PostQueryParamsTest extends BaseFeatureTest
     /** @test */
     public function indexOrderByTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $posts = Post::factory()->count(10)->create();
 
@@ -135,7 +131,7 @@ class PostQueryParamsTest extends BaseFeatureTest
     /** @test */
     public function indexWhereNullTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         Post::factory()->count(10)->create();
         $post1 = Post::factory()->create();
@@ -156,7 +152,7 @@ class PostQueryParamsTest extends BaseFeatureTest
     /** @test */
     public function indexWhereBetweenTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $todayPosts = Post::factory()->count(10)->create();
         $lastWeekPosts = Post::factory()->count(5)->create([
@@ -181,7 +177,7 @@ class PostQueryParamsTest extends BaseFeatureTest
     /** @test */
     public function indexWhereInTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $posts = Post::factory()->count(20)->create();
 
@@ -205,7 +201,7 @@ class PostQueryParamsTest extends BaseFeatureTest
     /** @test */
     public function indexWhereNotInTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $posts = Post::factory()->count(20)->create();
 
@@ -229,7 +225,7 @@ class PostQueryParamsTest extends BaseFeatureTest
     /** @test */
     public function indexWhereTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $todayPosts = Post::factory()->count(20)->create();
         Post::factory()->count(2)->create([

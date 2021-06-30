@@ -63,11 +63,11 @@ class CategoryUserUnauthorizedTest extends BaseFeatureTest
 
         /** @var Category $category */
         $category = Category::factory()->create();
-        $categoryData['name'] = 'Changed title';
+        $categoryData['status'] = 'Changed status';
         $response = $this->putJson($this->entity.'/'.$category->id, $categoryData);
 
         $response->assertStatus(403);
-        $this->assertDatabaseHas($this->entity, ['name' => $category->name]);
+        $this->assertDatabaseHas($this->entity, ['status' => $category->status]);
     }
 
     /**

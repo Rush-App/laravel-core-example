@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Post;
 
+use App\Models\Category;
 use App\Models\Post\Post;
 use App\Models\Post\PostTranslation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,7 +20,7 @@ class PostUserTest extends BaseFeatureTest
      */
     public function indexTest()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'index');
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.index');
 
         $authenticatedUserPosts = Post::factory()->count(5)->create(['user_id' => Auth::id()]);
         $otherUserPosts = Post::factory()->count(2)->create();
@@ -48,7 +49,7 @@ class PostUserTest extends BaseFeatureTest
      */
     public function showTest()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'show', true);
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.show');
 
         $post = Post::factory()->create(['user_id' => Auth::id()]);
 
@@ -74,9 +75,13 @@ class PostUserTest extends BaseFeatureTest
      */
     public function storeTest()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'store');
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.store');
 
+        $categoryData = $this->getDefaultCategoryData();
         $postData = $this->getDefaultPostData();
+
+        $category = Category::create($categoryData);
+        $postData['category_id'] = $category->id;
 
         $response = $this->postJson($this->entity, $postData);
         unset($postData['language']);
@@ -90,11 +95,15 @@ class PostUserTest extends BaseFeatureTest
      */
     public function updateTest()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'update', true);
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.update');
 
+        $categoryData = $this->getDefaultCategoryData();
         $postData = $this->getDefaultPostData();
 
+        $category = Category::create($categoryData);
+
         $postData['user_id'] = Auth::id();
+        $postData['category_id'] = $category->id;
         $post = Post::create($postData);
         $postData['post_id'] = $post->id;
         $postTranslation = PostTranslation::create($postData);
@@ -121,12 +130,22 @@ class PostUserTest extends BaseFeatureTest
         ];
     }
 
+    private function getDefaultCategoryData(): array
+    {
+        return  [
+            'status' => 'statuuus',
+            'name' => "test name",
+            'language_id' => $this->currentLanguage->id,
+            'language' => $this->currentLanguage->name,
+        ];
+    }
+
     /**
      * @test
      */
     public function destroyPost()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'destroy', true);
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.destroy');
 
         $post = Post::factory()->create(['user_id' => Auth::id()]);
 

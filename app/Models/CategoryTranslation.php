@@ -21,5 +21,6 @@ class CategoryTranslation extends BaseModel
     protected $fillable = [
         'name',
         'language_id',
+        'category_id',
     ];
 }

@@ -17,7 +17,7 @@ class CategoryUserTest extends BaseFeatureTest
      */
     public function indexTest()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'index');
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.index');
 
         Category::factory()->count(5)->create();
 
@@ -40,7 +40,7 @@ class CategoryUserTest extends BaseFeatureTest
      */
     public function showTest()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'show', false);
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.show', false);
 
         $category = Category::factory()->create();
 
@@ -60,9 +60,10 @@ class CategoryUserTest extends BaseFeatureTest
      */
     public function storeTest()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'store');
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.store');
 
         $categoryData = Category::factory()->raw();
+        $categoryData['name'] = 'Namme';
 
         $response = $this->postJson($this->entity, $categoryData);
 
@@ -76,14 +77,14 @@ class CategoryUserTest extends BaseFeatureTest
      */
     public function updateTest()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'update', false);
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.update', false);
 
         $category = Category::factory()->create();
-        $categoryData['name'] = 'Changed title';
+        $categoryData['status'] = 'Changed status';
         $response = $this->putJson($this->entity.'/'.$category->id, $categoryData);
 
         $response->assertOk()->assertJsonFragment($categoryData);
-        $this->assertDatabaseHas($this->entity, ['name' => 'Changed title']);
+        $this->assertDatabaseHas($this->entity, ['status' => 'Changed status']);
     }
 
     /**
@@ -91,7 +92,7 @@ class CategoryUserTest extends BaseFeatureTest
      */
     public function destroyPost()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'destroy', false);
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.destroy', false);
 
         $category = Category::factory()->create();
 

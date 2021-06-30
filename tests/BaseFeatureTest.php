@@ -13,7 +13,7 @@ use RushApp\Core\Models\Language;
 use RushApp\Core\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
-class BaseFeatureTest extends TestCase
+abstract class BaseFeatureTest extends TestCase
 {
     protected Language $currentLanguage;
 
@@ -86,7 +86,7 @@ class BaseFeatureTest extends TestCase
     {
         return collect(Route::getRoutes()->getRoutes())
             ->map->getName()
-            ->filter(fn (string $name) => Str::startsWith($name, ['posts.', 'categories.']))
+            ->filter(fn (?string $name) => Str::startsWith($name, ['posts.', 'categories.']))
             ->toArray();
     }
 

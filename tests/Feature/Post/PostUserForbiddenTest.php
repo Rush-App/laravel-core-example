@@ -17,7 +17,7 @@ class PostUserForbiddenTest extends BaseFeatureTest
      */
     public function indexTest()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'index');
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.index', true);
 
         $otherUserPosts = Post::factory()->count(5)->create();
 
@@ -46,7 +46,7 @@ class PostUserForbiddenTest extends BaseFeatureTest
      */
     public function showOtherUserPostTest()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'show', true);
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.show', true);
 
         $post = Post::factory()->create();
 
@@ -100,7 +100,7 @@ class PostUserForbiddenTest extends BaseFeatureTest
      */
     public function updateOtherUserPostTest()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'update', true);
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.update', true);
 
         /** @var Post $post */
         $post = Post::factory()->create();
@@ -150,7 +150,7 @@ class PostUserForbiddenTest extends BaseFeatureTest
      */
     public function destroyOtherUserPost()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'destroy', true);
+        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity.'.destroy', true);
 
         $post = Post::factory()->create();
 

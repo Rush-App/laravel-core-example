@@ -3,11 +3,8 @@
 namespace Tests\Feature\Category;
 
 use App\Models\Category;
+use App\Models\CategoryTranslation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Artisan;
-use RushApp\Core\Models\Action;
-use RushApp\Core\Models\Language;
-use RushApp\Core\Models\Role;
 use Tests\BaseFeatureTest;
 
 class CategoryAdminTest extends BaseFeatureTest
@@ -68,10 +65,11 @@ class CategoryAdminTest extends BaseFeatureTest
         $this->signIn()->assignAllActionsForAdminUser();
 
         $categoryData = Category::factory()->raw();
+        $categoryData['name'] = 'testNamee';
 
         $response = $this->postJson($this->entity, $categoryData);
 
-        $response->dump()->assertOk()->assertJsonFragment($categoryData);
+        $response->assertOk()->assertJsonFragment($categoryData);
 
         $this->assertDatabaseCount($this->entity, 1);
     }
@@ -83,12 +81,23 @@ class CategoryAdminTest extends BaseFeatureTest
     {
         $this->signIn()->assignAllActionsForAdminUser();
 
-        $category = Category::factory()->create();
-        $categoryData['name'] = 'Changed title';
-        $response = $this->putJson($this->entity.'/'.$category->id, $categoryData);
+        $category = Category::factory()->create()->toArray();
+        $category['category_id'] = $category['id'];
+        $category['language_id'] = $this->currentLanguage->id;
+        $category['name'] = 'testNamee';
+        $category['status'] = 'staaatus';
+
+        $postTranslation = CategoryTranslation::create($category);
+
+        $categoryData = [
+            'name' => 'Changed title',
+            'status' => 'Changed status'
+        ];
+        $response = $this->putJson($this->entity.'/'.$category['id'], $categoryData);
 
         $response->assertOk()->assertJsonFragment($categoryData);
-        $this->assertDatabaseHas($this->entity, ['name' => 'Changed title']);
+        $this->assertDatabaseHas('category_translations', ['name' => 'Changed title']);
+        $this->assertDatabaseHas($this->entity, ['status' => 'Changed status']);
     }
 
     /**

@@ -185,7 +185,7 @@ class PostAdminTest extends BaseFeatureTest
      */
     public function destroyPostByOwner()
     {
-        $this->signIn()->assignAllActionsForAuthenticatedUser($this->entity, 'destroy', true);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $post = Post::factory()->create(['user_id' => Auth::id()]);
 
