@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post\Post;
-use RushApp\Core\Controllers\BaseController;
+use RushApp\Core\Controllers\BaseCrudController;
 
-class PostController extends BaseController
+class PostController extends BaseCrudController
 {
     /**
      * the name of the model must be indicated in each controller
@@ -20,6 +20,6 @@ class PostController extends BaseController
 
     protected array $withRelationNames = [
         'user',
-        'categories',
+        'category',
     ];
 }

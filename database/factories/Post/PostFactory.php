@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Post;
 
+use App\Models\Category;
 use App\Models\Post\Post;
 use App\Models\Post\PostTranslation;
 use App\Models\User;
@@ -42,6 +43,7 @@ class PostFactory extends Factory
             'published' => true,
             'published_at' => now(),
             'user_id' => User::factory(),
+            'category_id' => Category::factory(),
         ];
     }
 }

@@ -18,12 +18,12 @@ Route::group(['middleware' => 'language'], function () {
     Route::post('register', 'User\\AuthController@register');
     Route::post('refresh-token', 'User\\AuthController@refreshToken');
 
-//    Route::resource('posts', 'PostController');
+    Route::resource('posts', 'PostController');
 
     Route::group(['middleware' => 'jwt-auth:user'], function () {
         Route::post('logout', 'User\\AuthController@logout');
 
-        Route::resource('posts', 'PostController')->middleware('core.check-user-action');
+//        Route::resource('posts', 'PostController')->middleware('core.check-user-action');
         Route::resource('categories', 'CategoryController')->middleware('check-user-action');
     });
     //FOR USER

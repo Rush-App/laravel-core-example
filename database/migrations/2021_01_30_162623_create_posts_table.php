@@ -18,6 +18,7 @@ class CreatePostsTable extends Migration
             $table->boolean('published')->default(false);
             $table->timestamp('published_at')->nullable();
             $table->foreignId('user_id');
+            $table->foreignId('category_id');
             $table->timestamps();
 
         });

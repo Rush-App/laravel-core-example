@@ -23,15 +23,9 @@ class PostExpandTest extends BaseFeatureTest
 
         /** @var Post[]|Collection $posts */
         $posts = Post::factory()->count(10)->create();
-        /** @var Category[]|Collection $categories */
-        $categories = Category::factory()->count(5)->create();
-
-        foreach ($posts as $post) {
-            $post->categories()->saveMany($categories->random(2));
-        }
 
         $response = $this->json('GET', $this->entity, [
-            'with' => 'user|categories',
+            'with' => 'user|category',
         ]);
 
         $response
@@ -41,8 +35,6 @@ class PostExpandTest extends BaseFeatureTest
                     "id",
                     "title",
                     "description",
-                    "post_id",
-                    "language_id",
                     "published",
                     "user_id",
                     "created_at",
@@ -55,17 +47,11 @@ class PostExpandTest extends BaseFeatureTest
                         "created_at",
                         "updated_at",
                       ],
-                      "categories" => [
-                          '*' => [
-                              "id",
-                              "name",
-                              "created_at",
-                              "updated_at",
-                              "pivot" => [
-                                  'post_id',
-                                  'category_id',
-                              ],
-                          ],
+                      "category" => [
+                          "id",
+                          "name",
+                          "created_at",
+                          "updated_at",
                       ]
                 ]
             ]);
@@ -78,15 +64,9 @@ class PostExpandTest extends BaseFeatureTest
 
         /** @var Post[]|Collection $posts */
         $posts = Post::factory()->count(10)->create();
-        /** @var Category[]|Collection $categories */
-        $categories = Category::factory()->count(5)->create();
-
-        foreach ($posts as $post) {
-            $post->categories()->saveMany($categories->random(2));
-        }
 
         $response = $this->json('GET', $this->entity, [
-            'with' => 'user:id,name,email|categories:id,name,updated_at',
+            'with' => 'user:id,name,email|category:id,name,updated_at',
         ]);
 
         $response
@@ -96,8 +76,6 @@ class PostExpandTest extends BaseFeatureTest
                     "id",
                     "title",
                     "description",
-                    "post_id",
-                    "language_id",
                     "published",
                     "user_id",
                     "created_at",
@@ -107,16 +85,10 @@ class PostExpandTest extends BaseFeatureTest
                         "name",
                         "email",
                     ],
-                    "categories" => [
-                        '*' => [
-                            "id",
-                            "name",
-                            "updated_at",
-                            "pivot" => [
-                                'post_id',
-                                'category_id',
-                            ],
-                        ],
+                    "category" => [
+                        "id",
+                        "name",
+                        'updated_at',
                     ]
                 ]
             ]);

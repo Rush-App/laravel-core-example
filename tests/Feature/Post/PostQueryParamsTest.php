@@ -3,6 +3,7 @@
 namespace Tests\Feature\Post;
 
 use App\Models\Post\Post;
+use App\Models\Post\PostTranslation;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -137,8 +138,10 @@ class PostQueryParamsTest extends BaseFeatureTest
         $this->signIn()->assignAllActionsForAdminUser($this->entity);
 
         Post::factory()->count(10)->create();
-        Post::create(Post::factory()->raw());
-        Post::create(Post::factory()->raw());
+        $post1 = Post::factory()->create();
+        $post1->translations()->update(['title' => null]);
+        $post2 = Post::factory()->create();
+        $post2->translations()->update(['title' => null]);
 
         $response = $this->json('GET', $this->entity, [
             'where_null' => 'title',

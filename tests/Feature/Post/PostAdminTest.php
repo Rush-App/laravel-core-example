@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Post;
 
+use App\Models\Category;
 use App\Models\Post\Post;
 use App\Models\Post\PostTranslation;
 use App\Models\User;
@@ -20,7 +21,7 @@ class PostAdminTest extends BaseFeatureTest
      */
     public function indexTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $posts = Post::factory()->count(5)->create();
 
@@ -33,9 +34,9 @@ class PostAdminTest extends BaseFeatureTest
                     'id',
                     'title',
                     'description',
-                    'post_id',
-                    'language_id',
                     'published',
+                    'title',
+                    'description',
                     'user_id',
                     'created_at',
                     'updated_at',
@@ -48,7 +49,7 @@ class PostAdminTest extends BaseFeatureTest
      */
     public function showTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $post = Post::factory()->create();
 
@@ -60,8 +61,6 @@ class PostAdminTest extends BaseFeatureTest
                 'id',
                 'title',
                 'description',
-                'post_id',
-                'language_id',
                 'published',
                 'user_id',
                 'created_at',
@@ -74,7 +73,7 @@ class PostAdminTest extends BaseFeatureTest
      */
     public function storeTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $postData = $this->getDefaultPostData();
 
@@ -90,7 +89,7 @@ class PostAdminTest extends BaseFeatureTest
      */
     public function storeWithValidationErrorsTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $postData = $this->getDefaultPostData();
         $postData['title'] = 'te';
@@ -107,7 +106,7 @@ class PostAdminTest extends BaseFeatureTest
      */
     public function updateTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $postData = $this->getDefaultPostData();
 
@@ -132,7 +131,7 @@ class PostAdminTest extends BaseFeatureTest
      */
     public function updateWithValidationErrorsTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $postData = $this->getDefaultPostData();
 
@@ -160,6 +159,7 @@ class PostAdminTest extends BaseFeatureTest
             'language_id' => $this->currentLanguage->id,
             'published' => true,
             'language' => $this->currentLanguage->name,
+            'category_id' => Category::factory()->create()->id,
         ];
     }
 
@@ -168,7 +168,7 @@ class PostAdminTest extends BaseFeatureTest
      */
     public function destroyPost()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $post = Post::factory()->create(['user_id' => Auth::id()]);
 

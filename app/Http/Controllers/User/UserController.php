@@ -6,9 +6,9 @@ use App\Http\Requests\User\UserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use RushApp\Core\Controllers\BaseController;
+use RushApp\Core\Controllers\BaseCrudController;
 
-class UserController extends BaseController
+class UserController extends BaseCrudController
 {
     /**
      * the name of the model must be indicated in each controller
@@ -18,10 +18,10 @@ class UserController extends BaseController
     protected string $requestClassController = UserRequest::class;
     protected User $userModel;
 
-    public function __construct(User $userModel, Request $request)
+    public function __construct(User $userModel)
     {
         $this->userModel = $userModel;
-        parent::__construct($request);
+        parent::__construct();
     }
 
     public function getOne(Request $request)

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use RushApp\Core\Models\Action;
 use RushApp\Core\Models\Language;
@@ -35,7 +36,7 @@ class BaseFeatureTest extends TestCase
         return $this;
     }
 
-    protected function assignAllActionsForAdminUser(string $entity)
+    protected function assignAllActionsForAdminUser()
     {
         /** @var Role $role */
         $role = Role::create([
@@ -48,8 +49,7 @@ class BaseFeatureTest extends TestCase
 
         foreach ($this->getBaseActions() as $actionName) {
             $action = Action::create([
-                'entity_name' => $entity,
-                'action_name' => $actionName,
+                'name' => $actionName,
             ]);
 
             $role->actions()->attach($action->id, [
@@ -60,7 +60,7 @@ class BaseFeatureTest extends TestCase
         return $this;
     }
 
-    protected function assignAllActionsForAuthenticatedUser(string $entity, string $actionName, $isOwner = true)
+    protected function assignAllActionsForAuthenticatedUser(string $actionName, $isOwner = true)
     {
         /** @var Role $role */
         $role = Role::create([
@@ -72,8 +72,7 @@ class BaseFeatureTest extends TestCase
         $user->roles()->save($role);
 
         $action = Action::create([
-            'entity_name' => $entity,
-            'action_name' => $actionName,
+            'name' => $actionName,
         ]);
 
         $role->actions()->attach($action->id, [
@@ -85,7 +84,10 @@ class BaseFeatureTest extends TestCase
 
     private function getBaseActions(): array
     {
-        return config('rushapp_core.action_names', []);
+        return collect(Route::getRoutes()->getRoutes())
+            ->map->getName()
+            ->filter(fn (string $name) => Str::startsWith($name, ['posts.', 'categories.']))
+            ->toArray();
     }
 
     protected function getTranslateTable($entity): string

@@ -1,21 +1,21 @@
 <?php
 
-namespace Database\Factories\Post;
+namespace Database\Factories;
 
-use App\Models\Post\Post;
-use App\Models\Post\PostTranslation;
+use App\Models\Category;
+use App\Models\CategoryTranslation;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
 use RushApp\Core\Models\Language;
 
-class PostTranslationFactory extends Factory
+class CategoryTranslationFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = PostTranslation::class;
+    protected $model = CategoryTranslation::class;
 
     /**
      * Define the model's default state.
@@ -25,10 +25,10 @@ class PostTranslationFactory extends Factory
     public function definition()
     {
         $languageId = Language::query()->first();
+
         return [
-            'title' => $this->faker->sentence(),
-            'description' => $this->faker->sentences(1, true),
-            'post_id' => Post::factory(),
+            'name' => $this->faker->sentence,
+            'category_id' => Category::factory(),
             'language_id' => $languageId,
         ];
     }

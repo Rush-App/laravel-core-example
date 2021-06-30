@@ -21,7 +21,7 @@ class CategoryAdminTest extends BaseFeatureTest
      */
     public function indexTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $categories = Category::factory()->count(5)->create();
 
@@ -44,7 +44,7 @@ class CategoryAdminTest extends BaseFeatureTest
      */
     public function showTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $category = Category::factory()->create();
 
@@ -65,13 +65,13 @@ class CategoryAdminTest extends BaseFeatureTest
      */
     public function storeTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $categoryData = Category::factory()->raw();
 
         $response = $this->postJson($this->entity, $categoryData);
 
-        $response->assertOk()->assertJsonFragment($categoryData);
+        $response->dump()->assertOk()->assertJsonFragment($categoryData);
 
         $this->assertDatabaseCount($this->entity, 1);
     }
@@ -81,7 +81,7 @@ class CategoryAdminTest extends BaseFeatureTest
      */
     public function updateTest()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $category = Category::factory()->create();
         $categoryData['name'] = 'Changed title';
@@ -96,7 +96,7 @@ class CategoryAdminTest extends BaseFeatureTest
      */
     public function destroyPost()
     {
-        $this->signIn()->assignAllActionsForAdminUser($this->entity);
+        $this->signIn()->assignAllActionsForAdminUser();
 
         $category = Category::factory()->create();
 
