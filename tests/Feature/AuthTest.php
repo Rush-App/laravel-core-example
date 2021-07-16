@@ -29,6 +29,10 @@ class AuthTest extends BaseFeatureTest
         $this->assertDatabaseMissing('users', [
             'password' => 'password',
         ]);
+
+        $token = json_decode($response->getContent(), true)['token'];
+        $this->withHeader('Authorization', "Bearer {$token}");
+        $this->postJson('/logout')->assertOk();
     }
 
     /**
